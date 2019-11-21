@@ -23,13 +23,39 @@
 
 NOTE: The contents of these files can be edited according to the requirement.
 
-# PROCEDURE TO RUN GRAFANA (DEFAULT: PROD MODE) #
+# PROCEDURE TO RUN GRAFANA #
 
 1. Open [docker-compose.yml](/docker_setup/docker-compose.yml) and uncomment ia_grafana.
 2. Check ia_influxdbconnector, ia_data_analytics, ia_telegraph are running for time-series data.
 3. Check [publisher](/tools/mqtt-temp-sensor/publisher.sh) is running.
 4. Use "docker-compose build" to build image.
 5. Use "docker-compose up" to run the service.
-6. Once ia_grafana service is up, go to https://localhost:3000 (for PROD_MODE) and http://localhost:3000 (for DEV_MODE).
+
+
+## PROD MODE [To be followed when running in PROD mode, skip if DEV mode]
+
+Import 'ca_certificate.pem' from 'docker_setup/provision/Certificates/ca' Directory to your Browser Certifcates.
+
+  ##### Steps to Import Certificates
+    * Go to *Settings* in Chrome
+    * Search *Manage Certificates* Under Privacy & Security
+    * Select Manage Certificates Option
+    * Under *Authorities* Tab Click Import Button
+    * With Import Wizard navigate to
+      *IEdgeInsights/docker_setup/provision/Certificates/ca* Dir
+    * Select *ca_certificate.pem* file
+    * Select All CheckBoxes and Click Import Button.
+
+6. Once ia_grafana service is up, go to https://localhost:3000 .
+
+## DEV MODE [To be follwed when running in DEV mode]
+
+6. Once ia_grafana service is up, go to http://localhost:3000 .
+
+
 7. Provide default username: "admin" and password: "admin".
-8. On successful login you will be routed on to the grafana "Home Dashboard" page.
+8. On "Home Dashboard" page, click on Dashboards icon from the left corner.
+9. Click on Manage Dashboards tab, it will list out all the preconfigured dashboards.
+10. Click on "Point_Data_Dashboard" which is a preconfigured dashboard.
+11. Click on "Panel Title" and select the "edit" option.
+12. Now you will be on Point_Data_Dashboard page and here you can make modifications to the query.
