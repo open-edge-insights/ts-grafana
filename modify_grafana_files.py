@@ -81,11 +81,11 @@ def generate_prod_config_files(user_name, password, dbname):
                     line=line.replace(';protocol = http','protocol = https')
                     fout.write(line)
                 elif ";cert_file =" in line and not cert_file_updated:
-                    line=line.replace(';cert_file =','cert_file = /run/secrets/etcd_Grafana_cert')
+                    line=line.replace(';cert_file =','cert_file = /etc/grafana/server_cert.pem')
                     fout.write(line)
                     cert_file_updated = True
                 elif ";cert_key =" in line:
-                    line=line.replace(';cert_key =','cert_key = /run/secrets/etcd_Grafana_key')
+                    line=line.replace(';cert_key =','cert_key = /etc/grafana/server_key.pem')
                     fout.write(line)
                 else: 
                     fout.write(line)           
@@ -141,6 +141,22 @@ def copy_config_files(dev_mode):
         shutil.copy('./Grafana/grafana.ini','/etc/grafana/grafana.ini')
 
 
+def get_grafana_config():
+    app_name = os.environ["AppName"]
+    conf = Util.get_crypto_dict(app_name)
+    cfg_mgr = ConfigManager()
+    config_client = cfg_mgr.get_config_client("etcd", conf)
+    server_cert = config_client.GetConfig("/" + app_name + "/server_cert")
+    server_key = config_client.GetConfig("/" + app_name + "/server_key")
+
+    with open('server_cert.pem', 'w') as f:
+        f.write(server_cert)
+
+    with open('server_key.pem', 'w') as f:
+        f.write(server_key)
+
+    shutil.copy('server_cert.pem','/etc/grafana/server_cert.pem')
+    shutil.copy('server_key.pem','/etc/grafana/server_key.pem')
 
 if __name__ == "__main__":
     
@@ -150,8 +166,10 @@ if __name__ == "__main__":
     cfg_mgr = ConfigManager()
     config_client = cfg_mgr.get_config_client("etcd", conf)
 
+    if not dev_mode:
+        get_grafana_config()
+
     log = configure_logging(os.environ['PY_LOG_LEVEL'].upper(),__name__,dev_mode)
     log.info("=============== STARTING grafana ===============")
     read_config(config_client, dev_mode)
-
     copy_config_files(dev_mode)
