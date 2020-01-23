@@ -25,7 +25,7 @@ NOTE: The contents of these files can be edited according to the requirement.
 
 # PROCEDURE TO RUN GRAFANA #
 
-1. Open [docker-compose.yml](/docker_setup/docker-compose.yml) and uncomment ia_grafana.
+1. Open [docker-compose.yml](/build/docker-compose.yml) and uncomment ia_grafana.
 2. Check ia_influxdbconnector, ia_data_analytics, ia_telegraph are running for time-series data.
 3. Check [publisher](/tools/mqtt-temp-sensor/publisher.sh) is running.
 4. Use "docker-compose build" to build image.
@@ -34,7 +34,7 @@ NOTE: The contents of these files can be edited according to the requirement.
 
 ## PROD MODE [To be followed when running in PROD mode, skip if DEV mode]
 
-Import 'ca_certificate.pem' from 'docker_setup/provision/Certificates/ca' Directory to your Browser Certifcates.
+Import 'ca_certificate.pem' from 'build/provision/Certificates/ca' Directory to your Browser Certifcates.
 
   ##### Steps to Import Certificates
     * Go to *Settings* in Chrome
@@ -42,7 +42,7 @@ Import 'ca_certificate.pem' from 'docker_setup/provision/Certificates/ca' Direct
     * Select Manage Certificates Option
     * Under *Authorities* Tab Click Import Button
     * With Import Wizard navigate to
-      *IEdgeInsights/docker_setup/provision/Certificates/ca* Dir
+      *IEdgeInsights/build/provision/Certificates/ca* Dir
     * Select *ca_certificate.pem* file
     * Select All CheckBoxes and Click Import Button.
 
