@@ -23,7 +23,7 @@ import shutil
 import yaml
 import json
 from distutils.util import strtobool
-from libs.ConfigManager import ConfigManager
+from eis.config_manager import ConfigManager
 from util.log import configure_logging, LOG_LEVELS
 from util.util import Util
 
