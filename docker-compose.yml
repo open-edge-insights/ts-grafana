@@ -22,6 +22,9 @@ services:
       InfluxDbAppName: "InfluxDBConnector"
       CertType: "pem"
       DEV_MODE: ${DEV_MODE}
+      no_proxy: ${eis_no_proxy},${ETCD_HOST}
+      ETCD_HOST: ${ETCD_HOST}
+      ETCD_PREFIX: ${ETCD_PREFIX}
     secrets:
       - ca_etcd
       - etcd_Grafana_cert
