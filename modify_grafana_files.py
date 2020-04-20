@@ -87,6 +87,12 @@ def generate_prod_config_files(user_name, password, dbname):
                 elif ";cert_key =" in line:
                     line=line.replace(';cert_key =','cert_key = /etc/grafana/server_key.pem')
                     fout.write(line)
+                elif ";http_addr =" in line:
+                    host = '0.0.0.0'
+                    if os.environ['GRAFANA_SERVER']:
+                        host = os.environ['GRAFANA_SERVER']
+                    line=line.replace(';http_addr =','http_addr = ' + host)
+                    fout.write(line)
                 else: 
                     fout.write(line)           
         
@@ -103,6 +109,18 @@ def generate_dev_config_files(user_name, password, dbname):
                     fout.write(line)
                 elif "database:" in line:
                     line=line.replace('""', dbname)
+                    fout.write(line)
+                else:
+                    fout.write(line)
+
+    with open('./Grafana/grafana_template.ini', 'r') as fin:
+        with open("./Grafana/grafana.ini", "w+") as fout:
+            for line in fin.readlines():
+                if ";http_addr =" in line:
+                    host = '0.0.0.0'
+                    if os.environ['GRAFANA_SERVER']:
+                        host = os.environ['GRAFANA_SERVER']
+                    line=line.replace(';http_addr =','http_addr = ' + host)
                     fout.write(line)
                 else:
                     fout.write(line)

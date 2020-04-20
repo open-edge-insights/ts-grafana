@@ -23,8 +23,6 @@ COPY ./requirements.txt .
 RUN pip3 install -r requirements.txt && \
     rm -rf requirements.txt
 
-EXPOSE 3000
-
 COPY . ./Grafana
 
 COPY ./run.sh /run.sh
