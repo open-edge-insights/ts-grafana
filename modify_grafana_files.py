@@ -27,15 +27,15 @@ from eis.config_manager import ConfigManager
 from util.log import configure_logging, LOG_LEVELS
 from util.util import Util
 
-def generate_prod_config_files(user_name, password, dbname):
+def generate_prod_config_files(user_name, password, dbname, conf):
 
-    f = open('/run/secrets/ca_etcd', 'r')
+    f = open(conf["trustFile"], 'r')
     lines = f.readlines()
     tlsCACert = "\\n".join([line.strip() for line in lines])
-    f = open('/run/secrets/etcd_Grafana_cert', 'r')
+    f = open(conf["certFile"], 'r')
     lines = f.readlines()
     tlsClientCert = "\\n".join([line.strip() for line in lines])
-    f = open('/run/secrets/etcd_Grafana_key', 'r')
+    f = open(conf["keyFile"], 'r')
     lines = f.readlines()
     tlsClientKey = "\\n".join([line.strip() for line in lines])
 
@@ -126,7 +126,7 @@ def generate_dev_config_files(user_name, password, dbname):
                     fout.write(line)
 
 
-def read_config (client, dev_mode):
+def read_config (client, dev_mode, conf):
     influx_app_name = os.environ["InfluxDbAppName"]
     config_key_path = "config"
     configfile = client.GetConfig("/{0}/{1}".format(
@@ -138,7 +138,7 @@ def read_config (client, dev_mode):
 
     if not dev_mode :
         log.info("generating prod mode config files for grafana")
-        generate_prod_config_files(user_name, password, dbname)
+        generate_prod_config_files(user_name, password, dbname, conf)
     else :
         log.info("generating dev mode config files for grafana")
         generate_dev_config_files(user_name, password, dbname)
@@ -189,5 +189,5 @@ if __name__ == "__main__":
 
     log = configure_logging(os.environ['PY_LOG_LEVEL'].upper(),__name__,dev_mode)
     log.info("=============== STARTING grafana ===============")
-    read_config(config_client, dev_mode)
+    read_config(config_client, dev_mode, conf)
     copy_config_files(dev_mode)
