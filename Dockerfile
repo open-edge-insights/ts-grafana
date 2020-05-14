@@ -1,6 +1,7 @@
 #Dockerfile for Grafana
 ARG EIS_VERSION
-FROM ia_eisbase:$EIS_VERSION as eisbase
+ARG DOCKER_REGISTRY
+FROM ${DOCKER_REGISTRY}ia_eisbase:$EIS_VERSION as eisbase
 
 LABEL description="Grafana image"
 
@@ -33,7 +34,7 @@ RUN chown -R ${EIS_UID} /var/lib/grafana && \
     chown -R ${EIS_UID} /etc/grafana && \
     rm Grafana/requirements.txt Grafana/run.sh
 
-FROM ia_common:$EIS_VERSION as common
+FROM ${DOCKER_REGISTRY}ia_common:$EIS_VERSION as common
 
 FROM eisbase
 
