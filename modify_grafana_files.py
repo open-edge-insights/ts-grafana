@@ -27,7 +27,11 @@ from eis.config_manager import ConfigManager
 from util.log import configure_logging, LOG_LEVELS
 from util.util import Util
 
-def generate_prod_config_files(user_name, password, dbname, conf):
+CERT_FILE = "/etc/grafana/server_cert.pem"
+KEY_FILE = "/etc/grafana/server_key.pem"
+CA_FILE = "/etc/grafana/ca_cert.pem"
+
+def generate_prod_config_files(db_config, conf):
 
     f = open(conf["trustFile"], 'r')
     lines = f.readlines()
@@ -44,16 +48,16 @@ def generate_prod_config_files(user_name, password, dbname, conf):
         with open("./Grafana/datasource.yml", "w+") as fout:
             for line in fin.readlines():
                 if "url:" in line:
-                    line=line.replace('http://localhost:8086', 'https://localhost:8086')
+                    line=line.replace('http://$INFLUX_SERVER:8086', 'https://$INFLUX_SERVER:8086')
                     fout.write(line)
                 elif "user:" in line:
-                    line=line.replace('""', user_name)
+                    line=line.replace('""', db_config['username'])
                     fout.write(line)
                 elif "password:" in line:
-                    line=line.replace('""', password)
+                    line=line.replace('""', db_config['password'])
                     fout.write(line)
                 elif "database:" in line:
-                    line=line.replace('""', dbname)
+                    line=line.replace('""', db_config['dbname'])
                     fout.write(line)
                 elif "tlsAuth:" in line:
                     line=line.replace('false', 'true')
@@ -81,11 +85,11 @@ def generate_prod_config_files(user_name, password, dbname, conf):
                     line=line.replace(';protocol = http','protocol = https')
                     fout.write(line)
                 elif ";cert_file =" in line and not cert_file_updated:
-                    line=line.replace(';cert_file =','cert_file = /etc/grafana/server_cert.pem')
+                    line=line.replace(';cert_file =','cert_file = ' + CERT_FILE)
                     fout.write(line)
                     cert_file_updated = True
                 elif ";cert_key =" in line:
-                    line=line.replace(';cert_key =','cert_key = /etc/grafana/server_key.pem')
+                    line=line.replace(';cert_key =','cert_key = ' + KEY_FILE)
                     fout.write(line)
                 elif ";http_addr =" in line:
                     host = '0.0.0.0'
@@ -97,18 +101,18 @@ def generate_prod_config_files(user_name, password, dbname, conf):
                     fout.write(line)           
         
     
-def generate_dev_config_files(user_name, password, dbname):
+def generate_dev_config_files(db_config):
     with open('./Grafana/datasource_sample.yml', 'r') as fin:
         with open("./Grafana/datasource.yml", "w+") as fout:
             for line in fin.readlines():
                 if "user:" in line:
-                    line=line.replace('""', user_name)
+                    line=line.replace('""', db_config['username'])
                     fout.write(line)
                 elif "password:" in line:
-                    line=line.replace('""', password)
+                    line=line.replace('""', db_config['password'])
                     fout.write(line)
                 elif "database:" in line:
-                    line=line.replace('""', dbname)
+                    line=line.replace('""', db_config['dbname'])
                     fout.write(line)
                 else:
                     fout.write(line)
@@ -126,7 +130,7 @@ def generate_dev_config_files(user_name, password, dbname):
                     fout.write(line)
 
 
-def read_config (client, dev_mode, conf):
+def read_config (client, conf):
     influx_app_name = os.environ["InfluxDbAppName"]
     config_key_path = "config"
     configfile = client.GetConfig("/{0}/{1}".format(
@@ -136,12 +140,13 @@ def read_config (client, dev_mode, conf):
     password = config["influxdb"]["password"]
     dbname = config["influxdb"]["dbname"]
 
-    if not dev_mode :
-        log.info("generating prod mode config files for grafana")
-        generate_prod_config_files(user_name, password, dbname, conf)
-    else :
-        log.info("generating dev mode config files for grafana")
-        generate_dev_config_files(user_name, password, dbname)
+    db_conf = {}
+    db_conf['username'] = user_name
+    db_conf['password'] = password
+    db_conf['dbname'] = dbname
+
+    return db_conf
+
 
 def copy_config_files(dev_mode):
 
@@ -164,8 +169,12 @@ def get_grafana_config():
     conf = Util.get_crypto_dict(app_name)
     cfg_mgr = ConfigManager()
     config_client = cfg_mgr.get_config_client("etcd", conf)
+    ca_cert = config_client.GetConfig("/" + app_name + "/ca_cert")
     server_cert = config_client.GetConfig("/" + app_name + "/server_cert")
     server_key = config_client.GetConfig("/" + app_name + "/server_key")
+
+    with open('ca_cert.pem', 'w') as f:
+        f.write(ca_cert)
 
     with open('server_cert.pem', 'w') as f:
         f.write(server_cert)
@@ -173,11 +182,18 @@ def get_grafana_config():
     with open('server_key.pem', 'w') as f:
         f.write(server_key)
 
-    shutil.copy('server_cert.pem','/etc/grafana/server_cert.pem')
-    shutil.copy('server_key.pem','/etc/grafana/server_key.pem')
+    shutil.copy('ca_cert.pem', CA_FILE)
+    shutil.copy('server_cert.pem', CERT_FILE)
+    shutil.copy('server_key.pem', KEY_FILE)
+
+    eis_cert_path = {}
+    eis_cert_path['trustFile'] = CA_FILE
+    eis_cert_path['certFile'] = CERT_FILE
+    eis_cert_path['keyFile'] = KEY_FILE
+
+    return eis_cert_path
 
 if __name__ == "__main__":
-    
     dev_mode = strtobool(os.environ['DEV_MODE'])
     influx_app_name = os.environ["InfluxDbAppName"]
     conf = Util.get_crypto_dict(influx_app_name)
@@ -185,9 +201,17 @@ if __name__ == "__main__":
     config_client = cfg_mgr.get_config_client("etcd", conf)
 
     if not dev_mode:
-        get_grafana_config()
+        eis_cert_path = get_grafana_config()
 
     log = configure_logging(os.environ['PY_LOG_LEVEL'].upper(),__name__,dev_mode)
     log.info("=============== STARTING grafana ===============")
-    read_config(config_client, dev_mode, conf)
+    db_config = read_config(config_client, conf)
+
+    if not dev_mode :
+        log.info("generating prod mode config files for grafana")
+        generate_prod_config_files(db_config, eis_cert_path)
+    else :
+        log.info("generating dev mode config files for grafana")
+        generate_dev_config_files(db_config)
+
     copy_config_files(dev_mode)

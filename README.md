@@ -26,7 +26,7 @@ NOTE: The contents of these files can be edited according to the requirement.
 # PROCEDURE TO RUN GRAFANA #
 
 1. Open [docker-compose.yml](/build/docker-compose.yml) and uncomment ia_grafana.
-2. Check ia_influxdbconnector, ia_data_analytics, ia_telegraph are running for time-series data.
+2. Check ia_influxdbconnector, ia_kapacitor, ia_telegraph are running for time-series data.
 3. Check [publisher](/tools/mqtt-temp-sensor/publisher.sh) is running.
 4. Use "docker-compose build" to build image.
 5. Use "docker-compose up" to run the service.
@@ -59,3 +59,43 @@ Import 'ca_certificate.pem' from 'build/provision/Certificates/ca' Directory to 
 10. Click on "Point_Data_Dashboard" which is a preconfigured dashboard.
 11. Click on "Panel Title" and select the "edit" option.
 12. Now you will be on Point_Data_Dashboard page and here you can make modifications to the query.
+
+# PROCEDURE TO RUN GRAFANA IN CSL SETUP #
+
+Follow the below given step after the installation of CSL Manager and Client.
+
+1. Follow the [provision_step](../build/csl/README.md) in the CSL Client system.
+
+2. Copy the [time_series_csldeploy.json](../build/csl/time_series_csldeploy.json)
+
+3. Open a browser in the CSL Manager system, visit "https://csl-manager-ip:8443", and login to CSL Management Dashboard
+   using the CSL Manager credentials set during the CSL installation.
+
+3. In the CSL Management Dashboard, click on the Submit New App and paste the content of time_series_csldeploy.json.
+
+4. Modify the "MQTT_BROKER_HOST" env variable with the broker IP (for example CSL Client system), click on Submit button.
+
+5. Check the Module status of the Grafana module, it should be in RUNNING state.
+
+6. Open a browser in CSL Client system, Go to "https://localhost:31506".
+
+7. Provide default username: "admin" and password: "admin".
+
+9. Click on Manage Dashboards tab, it will list out all the preconfigured dashboards.
+
+10. Click on "Point_Data_Dashboard" which is a preconfigured dashboard.
+
+11. Click on "Panel Title" and select the "edit" option.
+
+12. Now you will be on Point_Data_Dashboard page and here you can make modifications to the query.
+
+## Steps to execute query
+1. Once landed on the Point_Data_Dashboard, green spikes visible in the graph are the results of the default query
+
+2. In the "FROM" section of query, by default it will have 'default point_classifier_results WHERE +',
+   click on 'default_classifier_results', drop down will open with the name of Measurements present in InfluxDB.
+   If any other measurement is set the graph will switch to the measurement query results.
+
+3. In the "SELECT" section, by default it will have 'field(temperature) mean() +'. Click on 'temperature', a drop down will
+   open with the fields tags present in the schema of the measurements set in the FROM section.
+   Select any options the graph will react accordingly.
