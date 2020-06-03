@@ -1,0 +1,28 @@
+{
+    "SchemaVersion": "0.2",
+    "Runtime": "docker",
+    "RuntimeOptions": {
+        "ContainerImage": "ia_grafana:$EIS_VERSION"
+    },
+    "DataStore": {
+        "Protocol": "DIRECT",
+        "DataBuckets": [
+            {
+                "Name": "EIS/Grafana",
+                "Permissions": "RO"
+            },
+            {
+                "Name": "EIS/GlobalEnv",
+                "Permissions": "RO"
+            },
+            {
+                "Name": "EIS/Publickeys",
+                "Permissions": "RO"
+            },
+	    {
+		"Name": "EIS/InfluxDBConnector",
+		"Permissions": "RO"
+            }
+        ]
+    }
+}

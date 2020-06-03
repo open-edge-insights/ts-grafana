@@ -1,0 +1,52 @@
+{
+    "Module" : {
+        "Name": "Grafana",
+        "Description": "Grafana module manifest",
+        "SchemaVersion": "0.2",
+        "ManifestFile": "${idx:grafana:$EIS_VERSION}",
+        "RunAsUser": "$EIS_UID",
+        "RunAsGroup": "$EIS_UID",
+        "Resources": {
+            "CPU": 100,
+            "MemoryMB": 100
+        },
+        "ExecutionEnv": {
+            "AppName": "Grafana",
+            "ETCD_ENDPOINT": "${datastore.endpoint}",
+            "CONFIGMGR_CACERT": "${databucket.cacert}",
+            "CONFIGMGR_CERT": "${databucket.cert}",
+            "CONFIGMGR_KEY": "${databucket.key}",
+            "ETCD_PREFIX": "$ETCD_PREFIX",
+            "DEV_MODE": "$DEV_MODE",
+            "PROFILING_MODE": "$PROFILING_MODE",
+            "InfluxDbAppName": "InfluxDBConnector",
+            "INFLUX_SERVER": "${ep.inputGrafana.remoteaddress}",
+            "GRAFANA_SERVER": "0.0.0.0"
+        },
+        "Endpoints": [
+            {
+                "Name": "inputGrafana",
+                "Endtype": "client",
+                "Protocol": "TCP",
+                "DataType": "messages",
+                "Link": "influxout"
+            },
+            {
+                "Name": "outputGrafana",
+                "Endtype": "server",
+                "Protocol": "TCP",
+                "Port": "$GRAFANA_PORT",
+                "DataType": "messages",
+                "Link": "grafanaout"
+            }
+        ]
+    },
+    "Ingress" : {
+        "Name": "ext-grafana",
+        "Protocol": "TCP",
+        "Options": {
+            "Backend": "grafanaout",
+            "Port": "31506"
+        }
+    }
+}
