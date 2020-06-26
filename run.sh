@@ -23,21 +23,24 @@
 # to debug uncomment below line
 # set -x
 
-: "${GF_PATHS_DATA:=/var/lib/grafana}"
-: "${GF_PATHS_LOGS:=/var/log/grafana}"
-: "${GF_PATHS_PLUGINS:=/var/lib/grafana/plugins}"
+: "${GRAFANA_DATA_PATH:=/tmp/grafana/lib/grafana}"
+: "${GRAFANA_LOGS_PATH:=/tmp/grfana/log/grafana}"
+: "${GRAFANA_PLUGINS_PATH:=/tmp/grafana/lib/grafana/plugins}"
 
+echo "Copying the grafana configurations to /tmp"
+cp -r /usr/share/grafana /tmp/
 
 echo "Grafana enabled"
 python3.6 ./Grafana/modify_grafana_files.py
 
 if [ $? -eq 0 ]; then
+    echo "Grafana configuration files modified successfully"
     exec grafana-server  \
-    --homepath=/usr/share/grafana             \
-    --config=/etc/grafana/grafana.ini         \
-    cfg:default.paths.data="$GF_PATHS_DATA"   \
-    cfg:default.paths.logs="$GF_PATHS_LOGS"   \
-    cfg:default.paths.plugins="$GF_PATHS_PLUGINS"
+    --homepath=/tmp/grafana/                  \
+    --config=/tmp/grafana/grafana.ini         \
+    cfg:default.paths.data="$GRAFANA_DATA_PATH"   \
+    cfg:default.paths.logs="$GRAFANA_LOGS_PATH"   \
+    cfg:default.paths.plugins="$GRAFANA_PLUGINS_PATH"
 else
-    echo "modify_grafana_files.py failed to execute. Exiting!!!"
+    echo "Failed to modify Grafana configuration files. Exiting!!!"
 fi

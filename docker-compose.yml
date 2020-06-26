@@ -37,6 +37,7 @@ services:
     container_name: ia_grafana
     hostname: ia_grafana
     network_mode: host
+    read_only: true
     restart: unless-stopped
     environment:
       AppName: "Grafana"
@@ -48,6 +49,9 @@ services:
       ETCD_PREFIX: ${ETCD_PREFIX}
       INFLUX_SERVER: '127.0.0.1'
       GRAFANA_SERVER: '0.0.0.0'
+    user: ${EIS_UID}
+    volumes:
+       - "vol_temp_grafana:/tmp"
     ports:
       - "$GRAFANA_PORT:$GRAFANA_PORT"
     secrets:
@@ -56,6 +60,13 @@ services:
       - etcd_Grafana_key
       - etcd_InfluxDBConnector_cert
       - etcd_InfluxDBConnector_key
+
+volumes:
+  vol_temp_grafana:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
 
 secrets:
   etcd_Grafana_cert:

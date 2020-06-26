@@ -50,11 +50,8 @@ COPY . ./Grafana
 COPY ./run.sh /run.sh
 
 ARG EIS_UID
-RUN chown -R ${EIS_UID}:${EIS_UID} /var/lib/grafana && \
-    chown -R ${EIS_UID}:${EIS_UID} /var/log/grafana && \
-    chown -R ${EIS_UID}:${EIS_UID} /etc/grafana && \
-    chown -R ${EIS_UID}:${EIS_UID} /usr/share/grafana && \
-    chown -R ${EIS_UID}:${EIS_UID} /EIS/Grafana && \
+
+RUN mkdir /tmp/grafana && chown -R ${EIS_UID} /tmp/grafana && \
     rm Grafana/requirements.txt Grafana/run.sh
 
 FROM ${DOCKER_REGISTRY}ia_common:$EIS_VERSION as common
