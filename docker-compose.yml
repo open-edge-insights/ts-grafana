@@ -39,6 +39,7 @@ services:
     network_mode: host
     read_only: true
     restart: unless-stopped
+    ipc: "none"
     environment:
       AppName: "Grafana"
       InfluxDbAppName: "InfluxDBConnector"
