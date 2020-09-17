@@ -24,15 +24,18 @@
 import os
 import shutil
 import json
+import tempfile
 from distutils.util import strtobool
 from eis.config_manager import ConfigManager
 from util.log import configure_logging
 from util.util import Util
 
-GRAFANA_DIR = "/tmp/grafana"
+TMP_DIR = tempfile.gettempdir()
+GRAFANA_DIR = os.path.join(TMP_DIR, "grafana")
 CERT_FILE = "{}/server_cert.pem".format(GRAFANA_DIR)
 KEY_FILE = "{}/server_key.pem".format(GRAFANA_DIR)
 CA_FILE = "{}/ca_cert.pem".format(GRAFANA_DIR)
+CONF_FILE = "{}/grafana.ini".format(GRAFANA_DIR)
 TEMP_DS = "{}/conf/provisioning/datasources/datasource.yml".format(GRAFANA_DIR)
 
 
@@ -106,10 +109,10 @@ def generate_prod_ini_file():
     connection_config = {"protocol": "https",
                          "cert_file": CERT_FILE,
                          "cert_key": KEY_FILE,
-                         "http_addr": '0.0.0.0'}
+                         "http_addr": os.environ['GRAFANA_SERVER']}
 
     with open('./Grafana/grafana_template.ini', 'r') as fin:
-        with open("/tmp/grafana/grafana.ini", "w+") as fout:
+        with open(CONF_FILE, "w+") as fout:
             for line in fin.readlines():
                 not_done = True
                 for key, value in connection_config.items():
@@ -159,12 +162,10 @@ def generate_dev_ini_file():
     """This function generates the grafana.ini config for DEV mode
     """
     with open('./Grafana/grafana_template.ini', 'r') as fin:
-        with open("/tmp/grafana/grafana.ini", "w+") as fout:
+        with open(CONF_FILE, "w+") as fout:
             for line in fin.readlines():
                 if ";http_addr =" in line:
-                    host = '0.0.0.0'
-                    if os.environ['GRAFANA_SERVER']:
-                        host = os.environ['GRAFANA_SERVER']
+                    host = os.environ['GRAFANA_SERVER']
                     line = line.replace(';http_addr =', 'http_addr = ' + host)
                     fout.write(line)
                 else:
@@ -195,7 +196,7 @@ def read_config(client):
 def copy_config_files():
     """This function copies the modified grafana config files
     """
-    dashboard_dir = '/tmp/grafana/conf/provisioning/dashboards'
+    dashboard_dir = "{}/conf/provisioning/dashboards".format(GRAFANA_DIR)
     shutil.copy('./Grafana/dashboard_sample.yml',
                 dashboard_dir + '/dashboard_sample.yml')
     shutil.copy('./Grafana/dashboard.json',
