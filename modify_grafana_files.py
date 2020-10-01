@@ -26,9 +26,8 @@ import shutil
 import json
 import tempfile
 from distutils.util import strtobool
-from eis.config_manager import ConfigManager
+import cfgmgr.config_manager as cfg
 from util.log import configure_logging
-from util.util import Util
 
 TMP_DIR = tempfile.gettempdir()
 GRAFANA_DIR = os.path.join(TMP_DIR, "grafana")
@@ -172,18 +171,13 @@ def generate_dev_ini_file():
                     fout.write(line)
 
 
-def read_config(client):
+def read_config(app_cfg):
     """This function reads the InfluxDBConnector config
        from etcd to fetch the InfluxDB credentials
     """
-    influx_app_name = os.environ["InfluxDbAppName"]
-    config_key_path = "config"
-    configfile = client.GetConfig("/{0}/{1}".format(
-        influx_app_name, config_key_path))
-    config = json.loads(configfile)
-    user_name = config["influxdb"]["username"]
-    password = config["influxdb"]["password"]
-    dbname = config["influxdb"]["dbname"]
+    user_name = app_cfg["influxdb"]["username"]
+    password = app_cfg["influxdb"]["password"]
+    dbname = app_cfg["influxdb"]["dbname"]
 
     db_conf = {}
     db_conf['user'] = user_name
@@ -203,17 +197,14 @@ def copy_config_files():
                 dashboard_dir + '/dashboard.json')
 
 
-def get_grafana_config():
+def get_grafana_config(app_cfg):
     """This function reads the certificates from etcd
        and writes it to respective files.
     """
-    app_name = os.environ["AppName"]
-    conf = Util.get_crypto_dict(app_name)
-    cfg_mgr = ConfigManager()
-    config_client = cfg_mgr.get_config_client("etcd", conf)
-    ca_cert = config_client.GetConfig("/" + app_name + "/ca_cert")
-    server_cert = config_client.GetConfig("/" + app_name + "/server_cert")
-    server_key = config_client.GetConfig("/" + app_name + "/server_key")
+    # Set path to certs here
+    ca_cert = app_cfg["ca_cert"]
+    server_cert = app_cfg["server_cert"]
+    server_key = app_cfg["server_key"]
 
     with open(CA_FILE, 'w') as fpd:
         fpd.write(ca_cert)
@@ -235,19 +226,17 @@ def get_grafana_config():
 def main():
     """Main method for grafana
     """
-    dev_mode = strtobool(os.environ['DEV_MODE'])
-    influx_app_name = os.environ["InfluxDbAppName"]
-    conf = Util.get_crypto_dict(influx_app_name)
-    cfg_mgr = ConfigManager()
-    config_client = cfg_mgr.get_config_client("etcd", conf)
+    ctx = cfg.ConfigMgr()
+    app_cfg = ctx.get_app_config()
+    dev_mode = ctx.is_dev_mode()
 
     if not dev_mode:
-        eis_cert_path = get_grafana_config()
+        eis_cert_path = get_grafana_config(app_cfg)
 
     log = configure_logging(os.environ['PY_LOG_LEVEL'].upper(), __name__,
                             dev_mode)
     log.info("=============== STARTING grafana ===============")
-    db_config = read_config(config_client)
+    db_config = read_config(app_cfg)
 
     if not dev_mode:
         log.info("generating prod mode config files for grafana")

@@ -42,7 +42,6 @@ services:
     ipc: "none"
     environment:
       AppName: "Grafana"
-      InfluxDbAppName: "InfluxDBConnector"
       CertType: "pem"
       DEV_MODE: ${DEV_MODE}
       no_proxy: ${eis_no_proxy},${ETCD_HOST}

@@ -1,1 +1,10 @@
-{}
+{
+    "config": {
+        "influxdb": {
+            "username": "admin",
+            "password": "admin123",
+	    "dbname": "datain"
+        }
+    },
+    "interfaces": {}
+}
