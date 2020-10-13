@@ -40,11 +40,6 @@ RUN apt-get update && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
-COPY ./requirements.txt .
-#Installing pyyaml from requirements.txt
-RUN pip3 install -r requirements.txt && \
-    rm -rf requirements.txt
-
 COPY . ./Grafana
 
 COPY ./run.sh /run.sh
@@ -52,7 +47,7 @@ COPY ./run.sh /run.sh
 ARG EIS_UID
 
 RUN mkdir /tmp/grafana && chown -R ${EIS_UID} /tmp/grafana && \
-    rm Grafana/requirements.txt Grafana/run.sh
+    rm Grafana/run.sh
 
 FROM ${DOCKER_REGISTRY}ia_common:$EIS_VERSION as common
 
