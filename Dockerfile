@@ -60,4 +60,6 @@ COPY --from=common /usr/local/lib /usr/local/lib
 
 COPY --from=common /usr/local/lib/python3.6/dist-packages/ /usr/local/lib/python3.6/dist-packages
 
+HEALTHCHECK NONE
+
 ENTRYPOINT [ "/run.sh" ]
