@@ -22,16 +22,20 @@
 
 ARG EII_VERSION
 ARG DOCKER_REGISTRY
-FROM ${DOCKER_REGISTRY}ia_eiibase:$EII_VERSION as eiibase
 
+ARG UBUNTU_IMAGE_VERSION
+FROM ${DOCKER_REGISTRY}ia_eiibase:$EII_VERSION as base
+FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
+
+FROM base as builder
 LABEL description="Grafana image"
 
-ENV PYTHONPATH ${PYTHONPATH}:./..
+WORKDIR /app
 
 ARG GRAFANA_VERSION
 
 RUN apt-get update && \
-    apt-get -y --no-install-recommends install libfontconfig curl ca-certificates && \
+    apt-get -y --no-install-recommends install curl && \
     apt-get clean && \
     curl https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_amd64.deb > /tmp/grafana.deb && \
     dpkg -i /tmp/grafana.deb && \
@@ -42,24 +46,37 @@ RUN apt-get update && \
 
 COPY . ./Grafana
 
-COPY ./run.sh /run.sh
+FROM ubuntu:$UBUNTU_IMAGE_VERSION as runtime
 
+# Setting python dev env
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends python3.6 \
+                                               python3-distutils && \
+    rm -rf /var/lib/apt/lists/*
+
+
+WORKDIR /app
 ARG EII_UID
 
-RUN mkdir /tmp/grafana && chown -R ${EII_UID} /tmp/grafana && \
-    rm Grafana/run.sh
+ARG CMAKE_INSTALL_PREFIX
+ENV PYTHONPATH $PYTHONPATH:/app/.local/lib/python3.6/site-packages:/app
+COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
+COPY --from=common /eii/common/util util
+COPY --from=common /root/.local/lib .local/lib
+COPY --from=builder /usr/sbin/grafana-server /usr/sbin/grafana-server
+COPY --from=builder /usr/share/grafana /usr/share/grafana
+COPY --from=builder /app .
 
-FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
+RUN chown -R ${EII_UID} .local/lib/python3.6
 
-FROM eiibase
+RUN mkdir /tmp/grafana && \
+    chown -R ${EII_UID} /tmp/grafana
 
-COPY --from=common ${GO_WORK_DIR}/common/libs ${PY_WORK_DIR}/libs
-COPY --from=common ${GO_WORK_DIR}/common/util ${PY_WORK_DIR}/util
-COPY --from=common ${GO_WORK_DIR}/common/cmake ${PY_WORK_DIR}/common/cmake
-COPY --from=common /usr/local/lib /usr/local/lib
-
-COPY --from=common /usr/local/lib/python3.6/dist-packages/ /usr/local/lib/python3.6/dist-packages
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:${CMAKE_INSTALL_PREFIX}/lib
+ENV PATH $PATH:/app/.local/bin
 
 HEALTHCHECK NONE
-
-ENTRYPOINT [ "/run.sh" ]
+ENTRYPOINT ["./Grafana/run.sh"]
