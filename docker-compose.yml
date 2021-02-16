@@ -29,11 +29,11 @@ services:
       context: $PWD/../Grafana
       dockerfile: $PWD/../Grafana/Dockerfile
       args:
-          EIS_VERSION: ${EIS_VERSION}
+          EII_VERSION: ${EII_VERSION}
           GRAFANA_VERSION: ${GRAFANA_VERSION}
-          EIS_UID: ${EIS_UID}
+          EII_UID: ${EII_UID}
           DOCKER_REGISTRY: ${DOCKER_REGISTRY}
-    image: ${DOCKER_REGISTRY}ia_grafana:${EIS_VERSION}
+    image: ${DOCKER_REGISTRY}ia_grafana:${EII_VERSION}
     container_name: ia_grafana
     hostname: ia_grafana
     network_mode: host
@@ -49,12 +49,12 @@ services:
       AppName: "Grafana"
       CertType: "pem"
       DEV_MODE: ${DEV_MODE}
-      no_proxy: ${eis_no_proxy},${ETCD_HOST}
+      no_proxy: ${eii_no_proxy},${ETCD_HOST}
       ETCD_HOST: ${ETCD_HOST}
       ETCD_PREFIX: ${ETCD_PREFIX}
       INFLUX_SERVER: '127.0.0.1'
       GRAFANA_SERVER: '0.0.0.0'
-    user: ${EIS_UID}
+    user: ${EII_UID}
     volumes:
        - "vol_temp_grafana:/tmp"
     ports:
