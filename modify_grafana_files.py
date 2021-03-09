@@ -215,12 +215,12 @@ def get_grafana_config(app_cfg):
     with open(KEY_FILE, 'w') as fpd:
         fpd.write(server_key)
 
-    eis_cert_path = {}
-    eis_cert_path['trustFile'] = CA_FILE
-    eis_cert_path['certFile'] = CERT_FILE
-    eis_cert_path['keyFile'] = KEY_FILE
+    eii_cert_path = {}
+    eii_cert_path['trustFile'] = CA_FILE
+    eii_cert_path['certFile'] = CERT_FILE
+    eii_cert_path['keyFile'] = KEY_FILE
 
-    return eis_cert_path
+    return eii_cert_path
 
 
 def main():
@@ -231,7 +231,7 @@ def main():
     dev_mode = ctx.is_dev_mode()
 
     if not dev_mode:
-        eis_cert_path = get_grafana_config(app_cfg)
+        eii_cert_path = get_grafana_config(app_cfg)
 
     log = configure_logging(os.environ['PY_LOG_LEVEL'].upper(), __name__,
                             dev_mode)
@@ -240,7 +240,7 @@ def main():
 
     if not dev_mode:
         log.info("generating prod mode config files for grafana")
-        generate_prod_datasource_file(db_config, eis_cert_path)
+        generate_prod_datasource_file(db_config, eii_cert_path)
         generate_prod_ini_file()
     else:
         log.info("generating dev mode config files for grafana")

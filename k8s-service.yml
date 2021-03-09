@@ -23,7 +23,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: grafana
-  namespace: eis
+  namespace: eii
 spec:
   type: NodePort
   selector:
@@ -40,7 +40,7 @@ metadata:
   labels:
     app: grafana
   name: deployment-grafana
-  namespace: eis
+  namespace: eii
 
 spec:
   replicas: 1
@@ -54,7 +54,7 @@ spec:
     spec:
       containers:
       - name: ia-grafana
-        image: ${DOCKER_REGISTRY}ia_grafana:${EIS_VERSION}
+        image: ${DOCKER_REGISTRY}ia_grafana:${EII_VERSION}
         securityContext:
           privileged: true
         volumeMounts:
@@ -84,7 +84,7 @@ spec:
         - name: DEV_MODE
           value: '${DEV_MODE}'
         - name: no_proxy
-          value: '${eis_no_proxy},${ETCD_HOST}'
+          value: '${eii_no_proxy},${ETCD_HOST}'
         - name: ETCD_HOST
           value: etcd
         - name: ETCD_PREFIX
