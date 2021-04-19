@@ -32,6 +32,7 @@ services:
           EII_VERSION: ${EII_VERSION}
           GRAFANA_VERSION: ${GRAFANA_VERSION}
           EII_UID: ${EII_UID}
+          EII_USER_NAME: ${EII_USER_NAME}
           DOCKER_REGISTRY: ${DOCKER_REGISTRY}
           UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
           CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
@@ -56,7 +57,6 @@ services:
       ETCD_PREFIX: ${ETCD_PREFIX}
       INFLUX_SERVER: '127.0.0.1'
       GRAFANA_SERVER: '0.0.0.0'
-    user: ${EII_UID}
     volumes:
        - "vol_temp_grafana:/tmp"
     ports:

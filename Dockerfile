@@ -60,6 +60,10 @@ RUN apt-get update && \
 
 WORKDIR /app
 ARG EII_UID
+ARG EII_USER_NAME
+RUN groupadd $EII_USER_NAME -g $EII_UID && \
+    useradd -r -u $EII_UID -g $EII_USER_NAME $EII_USER_NAME
+
 
 ARG CMAKE_INSTALL_PREFIX
 ENV PYTHONPATH $PYTHONPATH:/app/.local/lib/python3.6/site-packages:/app
@@ -74,6 +78,8 @@ RUN chown -R ${EII_UID} .local/lib/python3.6
 
 RUN mkdir /tmp/grafana && \
     chown -R ${EII_UID} /tmp/grafana
+
+USER $EII_USER_NAME
 
 ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:${CMAKE_INSTALL_PREFIX}/lib
 ENV PATH $PATH:/app/.local/bin
