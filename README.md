@@ -46,11 +46,11 @@ Import 'ca_certificate.pem' from 'build/provision/Certificates/ca' Directory to 
     * Select *ca_certificate.pem* file
     * Select All CheckBoxes and Click Import Button.
 
-6. Once ia_grafana service is up, go to https://localhost:3000 .
+6. Once ia_grafana service is up, go to https://< host ip >:3000 .
 
 ## DEV MODE [To be follwed when running in DEV mode]
 
-6. Once ia_grafana service is up, go to http://localhost:3000 .
+6. Once ia_grafana service is up, go to http://< host ip >:3000 .
 
 
 7. Provide default username: "admin" and password: "admin".

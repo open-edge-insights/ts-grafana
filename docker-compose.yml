@@ -39,7 +39,6 @@ services:
     image: ${DOCKER_REGISTRY}ia_grafana:${EII_VERSION}
     container_name: ia_grafana
     hostname: ia_grafana
-    network_mode: host
     read_only: true
     restart: unless-stopped
     ipc: "none"
@@ -52,11 +51,14 @@ services:
       AppName: "Grafana"
       CertType: "pem"
       DEV_MODE: ${DEV_MODE}
-      no_proxy: ${eii_no_proxy},${ETCD_HOST}
+      no_proxy: "${ETCD_HOST},ia_influxdbconnector"
+      NO_PROXY: "${ETCD_HOST},ia_influxdbconnector"
       ETCD_HOST: ${ETCD_HOST}
       ETCD_PREFIX: ${ETCD_PREFIX}
-      INFLUX_SERVER: '127.0.0.1'
+      INFLUX_SERVER: 'ia_influxdbconnector'
       GRAFANA_SERVER: '0.0.0.0'
+    networks:
+      - eii
     volumes:
        - "vol_temp_grafana:/tmp"
     ports:
