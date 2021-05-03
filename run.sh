@@ -31,7 +31,7 @@ echo "Copying the grafana configurations to /tmp"
 cp -r /usr/share/grafana /tmp/
 
 echo "Grafana enabled"
-python3.6 ./Grafana/modify_grafana_files.py
+python3 ./Grafana/modify_grafana_files.py
 
 if [ $? -eq 0 ]; then
     echo "Grafana configuration files modified successfully"
