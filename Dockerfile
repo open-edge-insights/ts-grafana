@@ -35,7 +35,7 @@ WORKDIR /app
 ARG GRAFANA_VERSION
 
 RUN apt-get update && \
-    apt-get -y --no-install-recommends install curl && \
+    apt-get -y --no-install-recommends install curl libfontconfig1 && \
     apt-get clean && \
     curl https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_amd64.deb > /tmp/grafana.deb && \
     dpkg -i /tmp/grafana.deb && \
@@ -48,14 +48,9 @@ COPY . ./Grafana
 
 FROM ubuntu:$UBUNTU_IMAGE_VERSION as runtime
 
-# Setting python dev env
+# Setting python env
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends software-properties-common && \
-    add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends python3-distutils && \
-    rm -rf /var/lib/apt/lists/*
-
+    apt-get install -y --no-install-recommends python3-distutils python3-minimal
 
 WORKDIR /app
 ARG EII_UID
