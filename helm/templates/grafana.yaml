@@ -53,10 +53,10 @@ spec:
     spec:
       containers:
       - name: ia-grafana
-        image: {{ .Values.registry }}ia_grafana:{{ .Values.eii_version }}
+        image: {{ .Values.DOCKER_REGISTRY }}ia_grafana:{{ .Values.EII_VERSION }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         volumeMounts:
-        {{ if eq .Values.env.dev_mode false}}
+        {{ if eq .Values.env.DEV_MODE false}}
         - name: etcd-certs
           mountPath: /run/secrets/etcd/
         {{ end }}
@@ -65,7 +65,7 @@ spec:
         - name: AppName
           value: "Grafana"
         - name: DEV_MODE
-          value: '{{ .Values.env.dev_mode }}'
+          value: '{{ .Values.env.DEV_MODE }}'
         - name: ETCD_HOST
           value: {{ .Values.config.etcd.name }}
         - name: ETCD_CLIENT_PORT
@@ -76,7 +76,7 @@ spec:
           value: "influxdbconnector"
         - name: GRAFANA_SERVER
           value: "0.0.0.0"
-        {{ if eq .Values.env.dev_mode false}}
+        {{ if eq .Values.env.DEV_MODE false}}
         - name: CONFIGMGR_CACERT
           value: "/run/secrets/etcd/ca_certificate.pem"
         - name: CONFIGMGR_CERT
@@ -87,7 +87,7 @@ spec:
 
 
       volumes:
-      {{ if eq .Values.env.dev_mode false}}
+      {{ if eq .Values.env.DEV_MODE false}}
       - name: etcd-certs
         secret:
           secretName: eii-certs
