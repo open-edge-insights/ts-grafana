@@ -33,10 +33,9 @@ services:
           GRAFANA_VERSION: ${GRAFANA_VERSION}
           EII_UID: ${EII_UID}
           EII_USER_NAME: ${EII_USER_NAME}
-          DOCKER_REGISTRY: ${DOCKER_REGISTRY}
           UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
           CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
-    image: ${DOCKER_REGISTRY}ia_grafana:${EII_VERSION}
+    image: ${DOCKER_REGISTRY}openedgeinsights/ia_grafana:${EII_VERSION}
     container_name: ia_grafana
     hostname: ia_grafana
     read_only: true
