@@ -53,7 +53,7 @@ spec:
     spec:
       containers:
       - name: ia-grafana
-        image: {{ .Values.DOCKER_REGISTRY }}ia_grafana:{{ .Values.EII_VERSION }}
+        image: {{ .Values.DOCKER_REGISTRY }}openedgeinsights/ia_grafana:{{ .Values.EII_VERSION }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         volumeMounts:
         {{ if eq .Values.env.DEV_MODE false}}
