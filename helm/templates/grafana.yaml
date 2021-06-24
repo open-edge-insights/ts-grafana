@@ -51,6 +51,10 @@ spec:
       labels:
         app: grafana
     spec:
+      {{- if and .Values.DOCKER_USERNAME .Values.DOCKER_PASSWORD }}
+      imagePullSecrets:
+      - name: registryauth
+      {{- end }}
       containers:
       - name: ia-grafana
         image: {{ .Values.DOCKER_REGISTRY }}openedgeinsights/ia_grafana:{{ .Values.EII_VERSION }}
