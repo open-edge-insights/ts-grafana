@@ -21,37 +21,20 @@
 #Dockerfile for Grafana
 
 ARG EII_VERSION
+ARG GRAFANA_VERSION
 
-ARG UBUNTU_IMAGE_VERSION
-FROM ia_eiibase:$EII_VERSION as base
 FROM ia_common:$EII_VERSION as common
-
-FROM base as builder
+FROM grafana/grafana:${GRAFANA_VERSION}-ubuntu as runtime
 LABEL description="Grafana image"
 
 WORKDIR /app
 
-ARG GRAFANA_VERSION
-
-RUN apt-get update && \
-    apt-get -y --no-install-recommends install curl libfontconfig1 && \
-    apt-get clean && \
-    curl https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_amd64.deb > /tmp/grafana.deb && \
-    dpkg -i /tmp/grafana.deb && \
-    rm /tmp/grafana.deb && \
-    apt-get remove -y curl && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
-
 COPY . ./Grafana
-
-FROM ubuntu:$UBUNTU_IMAGE_VERSION as runtime
-
+USER root
 # Setting python env
 RUN apt-get update && \
     apt-get install -y --no-install-recommends python3-distutils python3-minimal
 
-WORKDIR /app
 ARG EII_UID
 ARG EII_USER_NAME
 RUN groupadd $EII_USER_NAME -g $EII_UID && \
@@ -63,9 +46,6 @@ ENV PYTHONPATH $PYTHONPATH:/app/.local/lib/python3.8/site-packages:/app
 COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
 COPY --from=common /eii/common/util util
 COPY --from=common /root/.local/lib .local/lib
-COPY --from=builder /usr/sbin/grafana-server /usr/sbin/grafana-server
-COPY --from=builder /usr/share/grafana /usr/share/grafana
-COPY --from=builder /app .
 
 RUN chown -R ${EII_UID} .local/lib/python3.8
 

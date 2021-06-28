@@ -27,6 +27,11 @@
 : "${GRAFANA_LOGS_PATH:=/tmp/grfana/log/grafana}"
 : "${GRAFANA_PLUGINS_PATH:=/tmp/grafana/lib/grafana/plugins}"
 
+export GF_PATHS_DATA="/tmp/grafana/lib/grafana"
+export GF_PATHS_LOGS="/tmp/grafana/log/grafana"
+export GF_PATHS_PLUGINS="/tmp/grafana/lib/grafana/plugins"
+export GF_PATHS_PROVISIONING="/tmp/grafana/conf/provisioning"
+
 echo "Copying the grafana configurations to /tmp"
 cp -r /usr/share/grafana /tmp/
 
