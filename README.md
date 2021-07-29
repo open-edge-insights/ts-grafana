@@ -25,7 +25,7 @@ NOTE: The contents of these files can be edited according to the requirement.
 
 1. Open [docker-compose.yml](/build/docker-compose.yml) and uncomment ia_grafana.
 2. Check ia_influxdbconnector, ia_kapacitor, ia_telegraph are running for time-series data.
-3. Check [publisher](/tools/mqtt-temp-sensor/publisher.sh) is running.
+3. Check [publisher](https://github.com/open-edge-insights/eii-tools/blob/master/mqtt-publisher/publisher_temp.sh) is running.
 4. Use "docker-compose build" to build image.
 5. Use "docker-compose up" to run the service.
 
