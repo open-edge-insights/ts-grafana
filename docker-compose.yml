@@ -32,11 +32,11 @@ services:
           EII_VERSION: ${EII_VERSION}
           GRAFANA_VERSION: ${GRAFANA_VERSION}
           EII_UID: ${EII_UID}
-          DOCKER_REGISTRY: ${DOCKER_REGISTRY}
-    image: ${DOCKER_REGISTRY}ia_grafana:${EII_VERSION}
+          EII_USER_NAME: ${EII_USER_NAME}
+          CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
+    image: ${DOCKER_REGISTRY}openedgeinsights/ia_grafana:${EII_VERSION}
     container_name: ia_grafana
     hostname: ia_grafana
-    network_mode: host
     read_only: true
     restart: unless-stopped
     ipc: "none"
@@ -49,12 +49,14 @@ services:
       AppName: "Grafana"
       CertType: "pem"
       DEV_MODE: ${DEV_MODE}
-      no_proxy: ${eii_no_proxy},${ETCD_HOST}
+      no_proxy: "${ETCD_HOST},ia_influxdbconnector"
+      NO_PROXY: "${ETCD_HOST},ia_influxdbconnector"
       ETCD_HOST: ${ETCD_HOST}
       ETCD_PREFIX: ${ETCD_PREFIX}
-      INFLUX_SERVER: '127.0.0.1'
+      INFLUX_SERVER: 'ia_influxdbconnector'
       GRAFANA_SERVER: '0.0.0.0'
-    user: ${EII_UID}
+    networks:
+      - eii
     volumes:
        - "vol_temp_grafana:/tmp"
     ports:

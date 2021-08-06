@@ -21,45 +21,41 @@
 #Dockerfile for Grafana
 
 ARG EII_VERSION
-ARG DOCKER_REGISTRY
-FROM ${DOCKER_REGISTRY}ia_eiibase:$EII_VERSION as eiibase
-
-LABEL description="Grafana image"
-
-ENV PYTHONPATH ${PYTHONPATH}:./..
-
 ARG GRAFANA_VERSION
 
-RUN apt-get update && \
-    apt-get -y --no-install-recommends install libfontconfig curl ca-certificates && \
-    apt-get clean && \
-    curl https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_amd64.deb > /tmp/grafana.deb && \
-    dpkg -i /tmp/grafana.deb && \
-    rm /tmp/grafana.deb && \
-    apt-get remove -y curl && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
+FROM ia_common:$EII_VERSION as common
+FROM grafana/grafana:${GRAFANA_VERSION}-ubuntu as runtime
+LABEL description="Grafana image"
+
+WORKDIR /app
 
 COPY . ./Grafana
-
-COPY ./run.sh /run.sh
+USER root
+# Setting python env
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends python3-distutils python3-minimal
 
 ARG EII_UID
+ARG EII_USER_NAME
+RUN groupadd $EII_USER_NAME -g $EII_UID && \
+    useradd -r -u $EII_UID -g $EII_USER_NAME $EII_USER_NAME
 
-RUN mkdir /tmp/grafana && chown -R ${EII_UID} /tmp/grafana && \
-    rm Grafana/run.sh
 
-FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
+ARG CMAKE_INSTALL_PREFIX
+ENV PYTHONPATH $PYTHONPATH:/app/.local/lib/python3.8/site-packages:/app
+COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
+COPY --from=common /eii/common/util util
+COPY --from=common /root/.local/lib .local/lib
 
-FROM eiibase
+RUN chown -R ${EII_UID} .local/lib/python3.8
 
-COPY --from=common ${GO_WORK_DIR}/common/libs ${PY_WORK_DIR}/libs
-COPY --from=common ${GO_WORK_DIR}/common/util ${PY_WORK_DIR}/util
-COPY --from=common ${GO_WORK_DIR}/common/cmake ${PY_WORK_DIR}/common/cmake
-COPY --from=common /usr/local/lib /usr/local/lib
+RUN mkdir /tmp/grafana && \
+    chown -R ${EII_UID} /tmp/grafana
 
-COPY --from=common /usr/local/lib/python3.6/dist-packages/ /usr/local/lib/python3.6/dist-packages
+USER $EII_USER_NAME
+
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:${CMAKE_INSTALL_PREFIX}/lib
+ENV PATH $PATH:/app/.local/bin
 
 HEALTHCHECK NONE
-
-ENTRYPOINT [ "/run.sh" ]
+ENTRYPOINT ["./Grafana/run.sh"]
