@@ -208,12 +208,15 @@ def get_grafana_config(app_cfg):
 
     with open(CA_FILE, 'w') as fpd:
         fpd.write(ca_cert)
+    os.chmod(CA_FILE, 0o400)
 
     with open(CERT_FILE, 'w') as fpd:
         fpd.write(server_cert)
+    os.chmod(CERT_FILE, 0o400)
 
     with open(KEY_FILE, 'w') as fpd:
         fpd.write(server_key)
+    os.chmod(KEY_FILE, 0o400)
 
     eii_cert_path = {}
     eii_cert_path['trustFile'] = CA_FILE
