@@ -50,7 +50,8 @@ COPY --from=common /root/.local/lib .local/lib
 RUN chown -R ${EII_UID} .local/lib/python3.8
 
 RUN mkdir /tmp/grafana && \
-    chown -R ${EII_UID} /tmp/grafana
+    chown -R ${EII_UID}:${EII_UID} /tmp/ && \
+    chmod -R 760 /tmp/
 
 USER $EII_USER_NAME
 
