@@ -46,7 +46,8 @@ COPY ./run.sh /run.sh
 
 ARG EII_UID
 
-RUN mkdir /tmp/grafana && chown -R ${EII_UID} /tmp/grafana && \
+RUN mkdir /tmp/grafana && chown -R ${EII_UID} /tmp/ && \
+    chmod -R 760 /tmp/ && \
     rm Grafana/run.sh
 
 FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
