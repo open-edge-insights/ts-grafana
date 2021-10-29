@@ -57,8 +57,6 @@ services:
     user: ${EII_UID}
     volumes:
        - "vol_temp_grafana:/tmp"
-    ports:
-      - "$GRAFANA_PORT:$GRAFANA_PORT"
     secrets:
       - ca_etcd
       - etcd_Grafana_cert
