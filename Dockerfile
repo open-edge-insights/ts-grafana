@@ -33,7 +33,8 @@ COPY . ./Grafana
 USER root
 # Setting python env
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3-distutils python3-minimal
+    apt-get install -y --no-install-recommends python3-distutils python3-minimal \
+        libcjson1 libzmq5
 
 ARG EII_UID
 ARG EII_USER_NAME
