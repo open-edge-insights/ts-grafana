@@ -8,7 +8,7 @@
 ## Configuration
 
 1. [dashboard.json](./dashboard.json)
-    This is the dashboard json file that is loaded when grafana starts. It has been preconfigured to display time-series data. 
+    This is the dashboard json file that is loaded when grafana starts. It has been preconfigured to display time-series data.
 
 2. [dashboard_sample.yml](./dashboard_sample.yml)
     This is the config file for all the dashboards. It specifies the path where all the dashboard json files will be looked for.
@@ -29,20 +29,20 @@ NOTE: The contents of these files can be edited according to the requirement.
 4. Use "docker-compose build" to build image.
 5. Use "docker-compose up" to run the service.
 
-  * **Prod mode [To be followed when running in PROD mode, skip if DEV mode]**
+* **Prod mode [To be followed when running in PROD mode, skip if DEV mode]**
 
     Import 'ca_certificate.pem' from 'build/provision/Certificates/ca' Directory to your Browser Certifcates.
 
     Steps to Import Certificates
-      * Go to *Settings* in Chrome
-      * Search *Manage Certificates* Under Privacy & Security
-      * Select Manage Certificates Option
-      * Under *Authorities* Tab Click Import Button
-      * With Import Wizard navigate to
+  * Go to *Settings* in Chrome
+  * Search *Manage Certificates* Under Privacy & Security
+  * Select Manage Certificates Option
+  * Under *Authorities* Tab Click Import Button
+  * With Import Wizard navigate to
         *IEdgeInsights/build/provision/Certificates/ca* Dir
-      * Select *ca_certificate.pem* file
-      * Select All CheckBoxes and Click Import Button.
-  * **Dev mode [To be followed when running in DEV mode]**
+  * Select *ca_certificate.pem* file
+  * Select All CheckBoxes and Click Import Button.
+* **Dev mode [To be followed when running in DEV mode]**
 
 6. Once ia_grafana service is up, go to http://< host ip >:3000 .
 7. Provide default username: "admin" and password: "admin".
