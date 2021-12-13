@@ -25,16 +25,35 @@ ARG GRAFANA_VERSION
 
 FROM ia_common:$EII_VERSION as common
 FROM grafana/grafana:${GRAFANA_VERSION}-ubuntu as runtime
+
 LABEL description="Grafana image"
 
 WORKDIR /app
 
-COPY . ./Grafana
 USER root
+
+RUN grafana-cli --pluginsDir "/var/lib/grafana/plugins" plugins install ryantxu-ajax-panel
+
 # Setting python env
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3-distutils python3-minimal \
-        libcjson1 libzmq5 zlib1g
+    apt-get install -y --no-install-recommends python3-distutils python3-minimal python3-pip \
+        libcjson1 libzmq5 zlib1g && \
+        python3 -m pip install -U pip && \
+        ln -sf /usr/bin/pip /usr/bin/pip3
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends unzip wget vim && \
+    mkdir static && \
+    wget -q --show-progress https://github.com/twbs/bootstrap/releases/download/v4.0.0/bootstrap-4.0.0-dist.zip && \
+    unzip bootstrap-4.0.0-dist.zip -d static && \
+    rm -rf bootstrap-4.0.0-dist.zip && \
+    wget -q --show-progress https://code.jquery.com/jquery-3.4.1.min.js && \
+    mv jquery-3.4.1.min.js static/js/jquery.min.js && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY . ./Grafana
+
+RUN pip3 install --user -r Grafana/requirements.txt
 
 ARG EII_UID
 ARG EII_USER_NAME
@@ -54,10 +73,12 @@ RUN mkdir /tmp/grafana && \
     chown -R ${EII_UID}:${EII_UID} /tmp/ && \
     chmod -R 760 /tmp/
 
-USER $EII_USER_NAME
+# TODO: Re-enable this
+# USER $EII_USER_NAME
 
 ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:${CMAKE_INSTALL_PREFIX}/lib
 ENV PATH $PATH:/app/.local/bin
 
 HEALTHCHECK NONE
+
 ENTRYPOINT ["./Grafana/run.sh"]

@@ -37,7 +37,7 @@ services:
     image: ${DOCKER_REGISTRY}openedgeinsights/ia_grafana:${EII_VERSION}
     container_name: ia_grafana
     hostname: ia_grafana
-    read_only: true
+    read_only: false
     restart: unless-stopped
     ipc: "none"
     security_opt:
@@ -47,7 +47,7 @@ services:
       interval: 5m        
     environment:
       AppName: "Grafana"
-      CertType: "pem"
+      CertType: "zmq,pem"
       DEV_MODE: ${DEV_MODE}
       no_proxy: "${ETCD_HOST},ia_influxdbconnector"
       NO_PROXY: "${ETCD_HOST},ia_influxdbconnector"
@@ -61,6 +61,7 @@ services:
        - "vol_temp_grafana:/tmp"
     ports:
       - "$GRAFANA_PORT:$GRAFANA_PORT"
+      - 5003:5003
     secrets:
       - ca_etcd
       - etcd_Grafana_cert

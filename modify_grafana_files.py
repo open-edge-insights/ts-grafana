@@ -25,10 +25,20 @@ import os
 import shutil
 import json
 import tempfile
+import threading
+import copy
+import queue
+import secrets
+from flask import Flask, render_template, Response, request, session
+from jinja2 import Environment, select_autoescape, FileSystemLoader
 from distutils.util import strtobool
+from distutils.dir_util import copy_tree
 import cfgmgr.config_manager as cfg
+import eii.msgbus as mb
 from util.log import configure_logging
+from util.util import Util
 
+# Initializing Grafana related variables
 TMP_DIR = tempfile.gettempdir()
 GRAFANA_DIR = os.path.join(TMP_DIR, "grafana")
 CERT_FILE = "{}/server_cert.pem".format(GRAFANA_DIR)
@@ -37,6 +47,29 @@ CA_FILE = "{}/ca_cert.pem".format(GRAFANA_DIR)
 CONF_FILE = "{}/grafana.ini".format(GRAFANA_DIR)
 TEMP_DS = "{}/conf/provisioning/datasources/datasource.yml".format(GRAFANA_DIR)
 
+# Config manager initialization
+ctx = cfg.ConfigMgr()
+app_cfg = ctx.get_app_config()
+dev_mode = ctx.is_dev_mode()
+topics_list = []
+queue_dict = {}
+
+# Initializing logger
+log = configure_logging(os.getenv('PY_LOG_LEVEL', 'DEBUG').upper(), __name__,
+                        dev_mode)
+
+# Visualization related variables
+FRAME_QUEUE_SIZE=10
+
+# Initializing flask related variables
+NONCE = secrets.token_urlsafe(8)
+APP = Flask(__name__)
+LOADER = FileSystemLoader(searchpath="Grafana/templates/")
+
+# Setting default auto-escape for all templates
+ENV = Environment(loader=LOADER, autoescape=select_autoescape(
+    enabled_extensions=('html'),
+    default_for_string=True,))
 
 def modify_cert(conf):
     """This function modifies each of the certs
@@ -195,6 +228,8 @@ def copy_config_files():
                 dashboard_dir + '/dashboard_sample.yml')
     shutil.copy('./Grafana/dashboard.json',
                 dashboard_dir + '/dashboard.json')
+    copy_tree('/var/lib/grafana/plugins',
+              '/tmp/grafana/lib/grafana/plugins')
 
 
 def get_grafana_config(app_cfg):
@@ -226,18 +261,115 @@ def get_grafana_config(app_cfg):
     return eii_cert_path
 
 
+def modify_multi_instance_dashboard():
+    """To modify dashboard in case of multiple
+       video streams
+    """
+    js = None
+    with open('./Grafana/dashboard.json', "rb") as f:
+        js = json.loads(f.read())
+        default_panel = js['panels'][1]
+        default_url = js['panels'][1]['url']
+        default_title = js['panels'][1]['title']
+        del js['panels'][1]
+        for i in range(0, len(topics_list)):
+            multi_instance_panel = copy.deepcopy(default_panel)
+            multi_instance_panel['url'] = \
+                default_url.replace(topics_list[0], topics_list[i])
+            multi_instance_panel['title'] = \
+                default_title.replace(topics_list[0], topics_list[i])
+            multi_instance_panel['id'] = \
+                multi_instance_panel['id'] + i
+            multi_instance_panel['gridPos']['y'] = \
+                int(multi_instance_panel['gridPos']['y'])*(i+1)
+            js['panels'].append(multi_instance_panel)
+    with open('./Grafana/dashboard.json', "w") as f:
+        json.dump(js, f, ensure_ascii=False, indent=4)
+
+
+def start_subscriber(config, topic):
+    """To start the msgbus subscribers
+    """
+    msgbus = mb.MsgbusContext(config)
+    subscriber = msgbus.new_subscriber(topic)
+    try:
+        while True:
+            md, fr = subscriber.recv()
+            log.info(md)
+            for key in queue_dict:
+                if key == topic:
+                    if not queue_dict[key].full():
+                        queue_dict[key].put_nowait(fr)
+                    else:
+                        log.warn("Dropping frames as the queue is full")
+    except Exception as e:
+        log.error("Encountered exception {}".format(e))
+    finally:
+        subscriber.close()
+
+def get_image_data(topic_name):
+    """Get the Images from Zmq
+    """
+    try:
+        final_image = None
+        while True:
+            if topic_name in queue_dict.keys():
+                if not queue_dict[topic_name].empty():
+                    frame = queue_dict[topic_name].get()
+                    final_image = frame
+            else:
+                raise Exception(f"Topic: {topic_name} doesn't exist")
+
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + final_image +
+                   b'\r\n\r\n')
+    except KeyboardInterrupt:
+        log.exception('Quitting due to keyboard interrupt...')
+    except Exception:
+        log.exception('Error during execution:')
+
+
+def set_header_tags(response):
+    """Local function to set secure response tags"""
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    return response
+
+
+@APP.route('/')
+def index():
+    """Video streaming home page."""
+
+    response = APP.make_response(render_template('index.html',
+                                                 nonce=NONCE))
+    return set_header_tags(response)
+
+
+@APP.route('/topics', methods=['GET'])
+def return_topics():
+    """Returns topics list over http
+    """
+    return Response(str(topics_list))
+
+
+@APP.route('/<topic_name>', methods=['GET'])
+def render_image(topic_name):
+    """Renders images over http
+    """
+    if topic_name in topics_list:
+        return Response(get_image_data(topic_name),
+                        mimetype='multipart/x-mixed-replace;\
+                                  boundary=frame')
+
+    return Response("Invalid Request")
+
+
 def main():
     """Main method for grafana
     """
-    ctx = cfg.ConfigMgr()
-    app_cfg = ctx.get_app_config()
-    dev_mode = ctx.is_dev_mode()
 
     if not dev_mode:
         eii_cert_path = get_grafana_config(app_cfg)
 
-    log = configure_logging(os.environ['PY_LOG_LEVEL'].upper(), __name__,
-                            dev_mode)
     log.info("=============== STARTING grafana ===============")
     db_config = read_config(app_cfg)
 
@@ -250,8 +382,29 @@ def main():
         generate_dev_datasource_file(db_config)
         generate_dev_ini_file()
 
+    try:
+        # Initializing subscriber for multiple streams
+        num_of_subs = ctx.get_num_subscribers()
+        if num_of_subs > 0:
+            for index in range(0, num_of_subs):
+                sub_ctx = ctx.get_subscriber_by_index(index)
+                msgbus_config = sub_ctx.get_msgbus_config()
+                topics = sub_ctx.get_topics()
+                queue_dict[topics[0]] = queue.Queue(maxsize=FRAME_QUEUE_SIZE)
+                topics_list.append(topics[0])
+                sub_thread = threading.Thread(target=start_subscriber,
+                                            args=(msgbus_config,
+                                                    topics[0],))
+                sub_thread.start()
+    except Exception as e:
+        raise Exception(f"Exeption occurred {e}")
+
+    modify_multi_instance_dashboard()
+
     copy_config_files()
 
+    APP.run(host='0.0.0.0', port='5003',
+            debug=True, threaded=True)
 
 if __name__ == "__main__":
     main()
