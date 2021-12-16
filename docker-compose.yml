@@ -47,7 +47,6 @@ services:
       interval: 5m        
     environment:
       AppName: "Grafana"
-      CertType: "zmq,pem"
       DEV_MODE: ${DEV_MODE}
       no_proxy: "${ETCD_HOST},ia_influxdbconnector"
       NO_PROXY: "${ETCD_HOST},ia_influxdbconnector"
@@ -59,15 +58,11 @@ services:
       - eii
     volumes:
        - "vol_temp_grafana:/tmp"
+       - ./Certificates/Grafana:/Certificates/Grafana
+       - ./Certificates/rootca:/Certificates/rootca
     ports:
       - "$GRAFANA_PORT:$GRAFANA_PORT"
       - 5003:5003
-    secrets:
-      - ca_etcd
-      - etcd_Grafana_cert
-      - etcd_Grafana_key
-      - etcd_InfluxDBConnector_cert
-      - etcd_InfluxDBConnector_key
 
 volumes:
   vol_temp_grafana:
@@ -76,12 +71,3 @@ volumes:
       type: tmpfs
       device: tmpfs
 
-secrets:
-  etcd_Grafana_cert:
-    file: provision/Certificates/Grafana/Grafana_client_certificate.pem
-  etcd_Grafana_key:
-    file: provision/Certificates/Grafana/Grafana_client_key.pem
-  etcd_InfluxDBConnector_cert:
-    file: provision/Certificates/InfluxDBConnector/InfluxDBConnector_client_certificate.pem
-  etcd_InfluxDBConnector_key:
-    file: provision/Certificates/InfluxDBConnector/InfluxDBConnector_client_key.pem

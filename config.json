@@ -1,5 +1,6 @@
 {
     "config": {
+        "cert_type": ["pem"],
         "influxdb": {
             "username": "admin",
             "password": "admin123",
