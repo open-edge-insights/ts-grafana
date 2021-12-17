@@ -65,3 +65,18 @@ NOTE: The contents of these files can be edited according to the requirement.
 3. In the "SELECT" section, by default it will have 'field(temperature) mean() +'. Click on 'temperature', a drop down will
    open with the fields tags present in the schema of the measurements set in the FROM section.
    Select any options the graph will react accordingly.
+
+## Steps for running Grafana in video usecase
+
+1. Ensure the endpoint of the publisher you want to subscribe to is mentioned in **Subscribers** section of
+   [config](config.json)
+
+2. On "Home Dashboard" page, click on Dashboards icon from the left corner.
+   Click on Manage Dashboards tab, it will list out all the preconfigured dashboards.
+
+3. Select **EII Video and Time Series Dashboard**, you would be able to view multiple panels with topic names of the subscriber
+   as the panel names along with a time-series panel named Time Series.
+
+4. Hovering over the topic name, i.e, panel title will display multiple options, one of them being View.
+
+5. Click on View and you should be able to view the subscribed frames for each topic.
