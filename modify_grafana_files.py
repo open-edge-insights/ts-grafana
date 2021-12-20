@@ -397,7 +397,7 @@ def main():
                                                     topics[0],))
                 sub_thread.start()
     except Exception as e:
-        raise Exception(f"Exeption occurred {e}")
+        log.warn(f"No subscriber instances found")
 
     modify_multi_instance_dashboard()
 
