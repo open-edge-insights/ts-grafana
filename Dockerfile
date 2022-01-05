@@ -42,7 +42,7 @@ RUN apt-get update && \
         ln -sf /usr/bin/pip /usr/bin/pip3
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends unzip wget vim && \
+    apt-get install -y --no-install-recommends unzip wget && \
     mkdir static && \
     wget -q --show-progress https://github.com/twbs/bootstrap/releases/download/v4.0.0/bootstrap-4.0.0-dist.zip && \
     unzip bootstrap-4.0.0-dist.zip -d static && \
