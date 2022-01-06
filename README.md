@@ -31,7 +31,7 @@ NOTE: The contents of these files can be edited according to the requirement.
 
 * **Prod mode [To be followed when running in PROD mode, skip if DEV mode]**
 
-    Import 'ca_certificate.pem' from 'build/provision/Certificates/ca' Directory to your Browser Certifcates.
+    Import 'cacert.pem' from 'build/Certificates/rootca/' Directory to your Browser Certifcates.
 
     Steps to Import Certificates
   * Go to *Settings* in Chrome
