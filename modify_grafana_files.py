@@ -404,7 +404,7 @@ def main():
     copy_config_files()
 
     APP.run(host='0.0.0.0', port='5003',
-            debug=True, threaded=True)
+            debug=False, threaded=True)
 
 if __name__ == "__main__":
     main()
