@@ -39,8 +39,8 @@ NOTE: The contents of these files can be edited according to the requirement.
   * Select Manage Certificates Option
   * Under *Authorities* Tab Click Import Button
   * With Import Wizard navigate to
-        *IEdgeInsights/build/provision/Certificates/ca* Dir
-  * Select *ca_certificate.pem* file
+        *IEdgeInsights/build/Certificates/rootca/* Dir
+  * Select *cacert.pem* file
   * Select All CheckBoxes and Click Import Button.
 * **Dev mode [To be followed when running in DEV mode]**
 

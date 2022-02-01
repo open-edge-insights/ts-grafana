@@ -52,6 +52,7 @@ services:
       NO_PROXY: "${ETCD_HOST},ia_influxdbconnector"
       ETCD_HOST: ${ETCD_HOST}
       ETCD_PREFIX: ${ETCD_PREFIX}
+      HOST_IP: ${HOST_IP}
       INFLUX_SERVER: 'ia_influxdbconnector'
       GRAFANA_SERVER: '0.0.0.0'
     networks:

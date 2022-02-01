@@ -29,6 +29,7 @@ import threading
 import copy
 import queue
 import secrets
+import ssl
 from flask import Flask, render_template, Response, request, session
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from distutils.util import strtobool
@@ -276,6 +277,8 @@ def modify_multi_instance_dashboard():
             multi_instance_panel = copy.deepcopy(default_panel)
             multi_instance_panel['url'] = \
                 default_url.replace(topics_list[0], topics_list[i])
+            multi_instance_panel['url'] = \
+                default_url.replace('127.0.0.1', os.environ['HOST_IP'])
             multi_instance_panel['title'] = \
                 default_title.replace(topics_list[0], topics_list[i])
             multi_instance_panel['id'] = \
@@ -396,15 +399,15 @@ def main():
                                             args=(msgbus_config,
                                                     topics[0],))
                 sub_thread.start()
+            modify_multi_instance_dashboard()
     except Exception as e:
         log.warn(f"No subscriber instances found")
-
-    modify_multi_instance_dashboard()
 
     copy_config_files()
 
     APP.run(host='0.0.0.0', port='5003',
             debug=False, threaded=True)
+
 
 if __name__ == "__main__":
     main()
