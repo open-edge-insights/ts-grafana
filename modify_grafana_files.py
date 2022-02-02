@@ -60,7 +60,7 @@ log = configure_logging(os.getenv('PY_LOG_LEVEL', 'DEBUG').upper(), __name__,
                         dev_mode)
 
 # Visualization related variables
-FRAME_QUEUE_SIZE=10
+FRAME_QUEUE_SIZE = 10
 
 # Initializing flask related variables
 NONCE = secrets.token_urlsafe(8)
@@ -71,6 +71,7 @@ LOADER = FileSystemLoader(searchpath="Grafana/templates/")
 ENV = Environment(loader=LOADER, autoescape=select_autoescape(
     enabled_extensions=('html'),
     default_for_string=True,))
+
 
 def modify_cert(conf):
     """This function modifies each of the certs
@@ -310,6 +311,7 @@ def start_subscriber(config, topic):
     finally:
         subscriber.close()
 
+
 def get_image_data(topic_name):
     """Get the Images from Zmq
     """
@@ -396,7 +398,7 @@ def main():
                 queue_dict[topics[0]] = queue.Queue(maxsize=FRAME_QUEUE_SIZE)
                 topics_list.append(topics[0])
                 sub_thread = threading.Thread(target=start_subscriber,
-                                            args=(msgbus_config,
+                                              args=(msgbus_config,
                                                     topics[0],))
                 sub_thread.start()
             modify_multi_instance_dashboard()
