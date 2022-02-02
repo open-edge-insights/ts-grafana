@@ -51,34 +51,32 @@ RUN apt-get update && \
     mv jquery-3.4.1.min.js static/js/jquery.min.js && \
     rm -rf /var/lib/apt/lists/*
 
-COPY . ./Grafana
-
+COPY requirements.txt ./Grafana/requirements.txt
 RUN pip3 install --user -r Grafana/requirements.txt
+
+COPY . ./Grafana
 
 ARG EII_UID
 ARG EII_USER_NAME
 RUN groupadd $EII_USER_NAME -g $EII_UID && \
     useradd -r -u $EII_UID -g $EII_USER_NAME $EII_USER_NAME
 
-
 ARG CMAKE_INSTALL_PREFIX
 ENV PYTHONPATH $PYTHONPATH:/app/.local/lib/python3.8/site-packages:/app
 COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
 COPY --from=common /eii/common/util util
 COPY --from=common /root/.local/lib .local/lib
-
+RUN cp -r /root/.local/lib/python3.8/site-packages/* .local/lib/python3.8/site-packages/
 RUN chown -R ${EII_UID} .local/lib/python3.8
 
 RUN mkdir /tmp/grafana && \
     chown -R ${EII_UID}:${EII_UID} /tmp/ && \
     chmod -R 760 /tmp/
 
-# TODO: Re-enable this
-# USER $EII_USER_NAME
-
 ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:${CMAKE_INSTALL_PREFIX}/lib
 ENV PATH $PATH:/app/.local/bin
 
+USER $EII_USER_NAME
 HEALTHCHECK NONE
 
 ENTRYPOINT ["./Grafana/run.sh"]
