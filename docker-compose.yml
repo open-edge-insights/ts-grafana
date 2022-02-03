@@ -55,6 +55,8 @@ services:
       HOST_IP: ${HOST_IP}
       INFLUX_SERVER: 'ia_influxdbconnector'
       GRAFANA_SERVER: '0.0.0.0'
+      INFLUXDB_USERNAME: ${INFLUXDB_USERNAME}
+      INFLUXDB_PASSWORD: ${INFLUXDB_PASSWORD}
     networks:
       - eii
     volumes:

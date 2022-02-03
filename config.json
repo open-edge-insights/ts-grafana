@@ -2,9 +2,7 @@
     "config": {
         "cert_type": ["pem", "zmq"],
         "influxdb": {
-            "username": "admin",
-            "password": "admin123",
-	    "dbname": "datain"
+	        "dbname": "datain"
         }
     },
     "interfaces": {

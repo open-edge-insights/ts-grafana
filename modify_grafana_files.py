@@ -209,8 +209,8 @@ def read_config(app_cfg):
     """This function reads the InfluxDBConnector config
        from etcd to fetch the InfluxDB credentials
     """
-    user_name = app_cfg["influxdb"]["username"]
-    password = app_cfg["influxdb"]["password"]
+    user_name = os.environ["INFLUXDB_USERNAME"]
+    password = os.environ["INFLUXDB_PASSWORD"]
     dbname = app_cfg["influxdb"]["dbname"]
 
     db_conf = {}
