@@ -279,7 +279,11 @@ def modify_multi_instance_dashboard():
             multi_instance_panel['url'] = \
                 default_url.replace(topics_list[0], topics_list[i])
             multi_instance_panel['url'] = \
-                default_url.replace('127.0.0.1', os.environ['HOST_IP'])
+                multi_instance_panel['url'].replace('127.0.0.1',
+                                                    os.environ['HOST_IP'])
+            if not dev_mode:
+                multi_instance_panel['url'] = \
+                    multi_instance_panel['url'].replace('http', 'https')
             multi_instance_panel['title'] = \
                 default_title.replace(topics_list[0], topics_list[i])
             multi_instance_panel['id'] = \
@@ -403,12 +407,43 @@ def main():
                 sub_thread.start()
             modify_multi_instance_dashboard()
     except Exception as e:
-        log.warn(f"No subscriber instances found")
+        log.warn(f"No subscriber instances found {e}")
 
     copy_config_files()
 
-    APP.run(host='0.0.0.0', port='5003',
-            debug=False, threaded=True)
+    flask_debug = bool(os.environ['PY_LOG_LEVEL'].lower() == 'debug')
+
+    if dev_mode:
+
+        APP.run(host='0.0.0.0', port='5003',
+                debug=flask_debug, threaded=True)
+    else:
+        APP.secret_key = os.urandom(24)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+
+        # For Secure Session Cookie
+        APP.config.update(SESSION_COOKIE_SECURE=True,
+                          SESSION_COOKIE_SAMESITE='Lax')
+
+        server_cert = app_cfg["server_cert"]
+        server_key = app_cfg["server_key"]
+
+        # Since Python SSL Load Cert Chain Method is not having option to load
+        # Cert from Variable. So for now we are going below method
+        server_cert_temp = tempfile.NamedTemporaryFile()
+        server_key_temp = tempfile.NamedTemporaryFile()
+
+        server_cert_temp.write(bytes(server_cert, "utf-8"))
+        server_cert_temp.seek(0)
+
+        server_key_temp.write(bytes(server_key, "utf-8"))
+        server_key_temp.seek(0)
+
+        context.load_cert_chain(server_cert_temp.name, server_key_temp.name)
+        server_cert_temp.close()
+        server_key_temp.close()
+        APP.run(host='0.0.0.0', port='5003',  # nosec
+                debug=flask_debug, threaded=True, ssl_context=context)
 
 
 if __name__ == "__main__":
