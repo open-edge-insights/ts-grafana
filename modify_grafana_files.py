@@ -284,6 +284,10 @@ def modify_multi_instance_dashboard():
             if not dev_mode:
                 multi_instance_panel['url'] = \
                     multi_instance_panel['url'].replace('http', 'https')
+            if dev_mode:
+                multi_instance_panel['url'] = \
+                    multi_instance_panel['url'].replace(str(app_cfg['port']),
+                                                        str(app_cfg['dev_port']))
             multi_instance_panel['title'] = \
                 default_title.replace(topics_list[0], topics_list[i])
             multi_instance_panel['id'] = \
@@ -414,8 +418,7 @@ def main():
     flask_debug = bool(os.environ['PY_LOG_LEVEL'].lower() == 'debug')
 
     if dev_mode:
-
-        APP.run(host='0.0.0.0', port='5003',
+        APP.run(host='0.0.0.0', port=app_cfg['dev_port'],
                 debug=flask_debug, threaded=True)
     else:
         APP.secret_key = os.urandom(24)
@@ -442,7 +445,7 @@ def main():
         context.load_cert_chain(server_cert_temp.name, server_key_temp.name)
         server_cert_temp.close()
         server_key_temp.close()
-        APP.run(host='0.0.0.0', port='5003',  # nosec
+        APP.run(host='0.0.0.0', port=app_cfg['port'],  # nosec
                 debug=flask_debug, threaded=True, ssl_context=context)
 
 
