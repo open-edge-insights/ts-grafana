@@ -61,8 +61,8 @@ services:
       - eii
     volumes:
        - "vol_temp_grafana:/tmp"
-       - ./Certificates/Grafana:/run/secrets/Grafana
-       - ./Certificates/rootca:/run/secrets/rootca
+       - ./Certificates/Grafana:/run/secrets/Grafana:ro
+       - ./Certificates/rootca/cacert.pem:/run/secrets/rootca/cacert.pem:ro
     ports:
       - "$GRAFANA_PORT:$GRAFANA_PORT"
       - 5003:5003
