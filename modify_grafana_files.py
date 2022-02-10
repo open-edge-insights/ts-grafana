@@ -34,10 +34,13 @@ from flask import Flask, render_template, Response, request, session
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from distutils.util import strtobool
 from distutils.dir_util import copy_tree
+import cv2
+import numpy as np
 import cfgmgr.config_manager as cfg
 import eii.msgbus as mb
 from util.log import configure_logging
 from util.util import Util
+from util.common import Visualizer
 
 # Initializing Grafana related variables
 TMP_DIR = tempfile.gettempdir()
@@ -47,12 +50,17 @@ KEY_FILE = "{}/server_key.pem".format(GRAFANA_DIR)
 CA_FILE = "{}/ca_cert.pem".format(GRAFANA_DIR)
 CONF_FILE = "{}/grafana.ini".format(GRAFANA_DIR)
 TEMP_DS = "{}/conf/provisioning/datasources/datasource.yml".format(GRAFANA_DIR)
+TEXT = 'Disconnected'
+TEXTPOSITION = (10, 110)
+TEXTFONT = cv2.FONT_HERSHEY_PLAIN
+TEXTCOLOR = (255, 255, 255)
 
 # Config manager initialization
 ctx = cfg.ConfigMgr()
 app_cfg = ctx.get_app_config()
 dev_mode = ctx.is_dev_mode()
 topics_list = []
+topic_config_list = []
 queue_dict = {}
 
 # Initializing logger
@@ -299,37 +307,55 @@ def modify_multi_instance_dashboard():
         json.dump(js, f, ensure_ascii=False, indent=4)
 
 
-def start_subscriber(config, topic):
-    """To start the msgbus subscribers
+def msg_bus_subscriber(topic_name, logger, json_config):
+    """msg_bus_subscriber is the ZeroMQ callback to
+    subscribe to classified results
     """
-    msgbus = mb.MsgbusContext(config)
-    subscriber = msgbus.new_subscriber(topic)
-    try:
-        while True:
-            md, fr = subscriber.recv()
-            log.info(md)
-            for key in queue_dict:
-                if key == topic:
-                    if not queue_dict[key].full():
-                        queue_dict[key].put_nowait(fr)
-                    else:
-                        log.warn("Dropping frames as the queue is full")
-    except Exception as e:
-        log.error("Encountered exception {}".format(e))
-    finally:
-        subscriber.close()
+    visualizer = Visualizer(queue_dict, logger,
+                            labels=json_config["labels"],
+                            draw_results=json_config["draw_results"])
+
+    for topic_config in topic_config_list:
+
+        topic, msgbus_cfg = topic_config
+
+        if topic_name == topic:
+            callback_thread = threading.Thread(target=visualizer.callback,
+                                               args=(msgbus_cfg, topic, ))
+            callback_thread.start()
+            break
+
+
+def get_blank_image(text):
+    """Get Blank Images
+    """
+    blank_image_shape = (130, 200, 3)
+    blank_image = np.zeros(blank_image_shape, dtype=np.uint8)
+    cv2.putText(blank_image, text, TEXTPOSITION,
+                TEXTFONT, 1.5, TEXTCOLOR, 2, cv2.LINE_AA)
+    _, jpeg = cv2.imencode('.jpg', blank_image)
+    final_image = jpeg.tobytes()
+    return final_image
 
 
 def get_image_data(topic_name):
     """Get the Images from Zmq
     """
+    dev_mode = ctx.is_dev_mode()
+
+    logger = configure_logging(os.environ['PY_LOG_LEVEL'].upper(),
+                               __name__, dev_mode)
     try:
-        final_image = None
+        final_image = get_blank_image(TEXT)
+        msg_bus_subscriber(topic_name, logger, app_cfg)
         while True:
             if topic_name in queue_dict.keys():
                 if not queue_dict[topic_name].empty():
                     frame = queue_dict[topic_name].get()
-                    final_image = frame
+                    ret, jpeg = cv2.imencode('.jpg', frame)
+                    del frame
+                    final_image = jpeg.tobytes()
+                    del jpeg
             else:
                 raise Exception(f"Topic: {topic_name} doesn't exist")
 
@@ -402,13 +428,13 @@ def main():
             for index in range(0, num_of_subs):
                 sub_ctx = ctx.get_subscriber_by_index(index)
                 msgbus_config = sub_ctx.get_msgbus_config()
-                topics = sub_ctx.get_topics()
-                queue_dict[topics[0]] = queue.Queue(maxsize=FRAME_QUEUE_SIZE)
-                topics_list.append(topics[0])
-                sub_thread = threading.Thread(target=start_subscriber,
-                                              args=(msgbus_config,
-                                                    topics[0],))
-                sub_thread.start()
+                topic = sub_ctx.get_topics()[0]
+                # Adding topic & msgbus_config to
+                # topic_config tuple
+                topic_config = (topic, msgbus_config)
+                topic_config_list.append(topic_config)
+                topics_list.append(topic)
+                queue_dict[topic] = queue.Queue(maxsize=FRAME_QUEUE_SIZE)
             modify_multi_instance_dashboard()
     except Exception as e:
         log.warn(f"No subscriber instances found {e}")

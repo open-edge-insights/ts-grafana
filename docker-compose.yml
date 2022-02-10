@@ -62,6 +62,7 @@ services:
       - eii
     volumes:
        - "vol_temp_grafana:/tmp"
+       - "vol_eii_socket:${SOCKET_DIR}"
        - ./Certificates/Grafana:/run/secrets/Grafana:ro
        - ./Certificates/rootca/cacert.pem:/run/secrets/rootca/cacert.pem:ro
     ports:

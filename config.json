@@ -5,7 +5,34 @@
 	        "dbname": "datain"
         },
         "port": 5003,
-        "dev_port": 5004
+        "dev_port": 5004,
+        "draw_results": "true",
+        "labels" : {
+            "camera1_stream_results": {
+                "0": "MISSING",
+                "1": "SHORT"
+            },
+            "native_safety_gear_stream_results": {
+                "1": "safety_helmet",
+                "2": "safety_jacket",
+                "3": "Safe",
+                "4": "Violation"
+            },
+            "py_safety_gear_stream_results": {
+                "1": "safety_helmet",
+                "2": "safety_jacket",
+                "3": "Safe",
+                "4": "Violation"
+
+            },
+            "gva_safety_gear_stream_results": {
+                "1": "safety_helmet",
+                "2": "safety_jacket",
+                "3": "Safe",
+                "4": "Violation"
+            }
+
+        }
     },
     "interfaces": {
         "Subscribers": [

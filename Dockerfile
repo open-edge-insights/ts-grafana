@@ -54,6 +54,9 @@ RUN apt-get update && \
 COPY requirements.txt ./Grafana/requirements.txt
 RUN pip3 install --user -r Grafana/requirements.txt
 
+RUN apt-get update && \
+    apt-get install ffmpeg libsm6 libxext6  -y
+
 COPY . ./Grafana
 
 ARG EII_UID
@@ -71,12 +74,12 @@ RUN chown -R ${EII_UID} .local/lib/python3.8
 
 RUN mkdir /tmp/grafana && \
     chown -R ${EII_UID}:${EII_UID} /tmp/ ./Grafana/ && \
-    chmod -R 760 /tmp/ ./Grafana/
+    chmod -R 760 /tmp/ ./Grafana/ ${CMAKE_INSTALL_PREFIX}
 
 ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:${CMAKE_INSTALL_PREFIX}/lib
 ENV PATH $PATH:/app/.local/bin
 
-USER $EII_USER_NAME
+# USER $EII_USER_NAME
 HEALTHCHECK NONE
 
 ENTRYPOINT ["./Grafana/run.sh"]
