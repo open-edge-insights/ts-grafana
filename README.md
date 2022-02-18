@@ -88,3 +88,8 @@ Perform the following steps to run Grafana for a video use case:
 4. Select **EII Video and Time Series Dashboard**, to view multiple panels with topic names of the subscriber as the panel names along with a time-series panel named `Time Series`.
 5. Hover over the topic name. The panel title will display multiple options.
 6. Click **View** to view the subscribed frames for each topic.
+
+>**NOTE:**
+>
+> 1. The only supported browser for Grafana support for video usecase is **Google Chrome**.
+> 2. Changing gridPos for the video frame panels is prohibited since these values are altered internally to support multi instance.

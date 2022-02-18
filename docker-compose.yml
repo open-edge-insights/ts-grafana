@@ -51,6 +51,7 @@ services:
       no_proxy: "${ETCD_HOST},ia_influxdbconnector"
       NO_PROXY: "${ETCD_HOST},ia_influxdbconnector"
       ETCD_HOST: ${ETCD_HOST}
+      ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
       ETCD_PREFIX: ${ETCD_PREFIX}
       HOST_IP: ${HOST_IP}
       INFLUX_SERVER: ${HOST_IP}
