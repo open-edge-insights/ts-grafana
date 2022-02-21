@@ -27,6 +27,7 @@ import json
 import tempfile
 import threading
 import copy
+import math
 import queue
 import secrets
 import ssl
@@ -303,6 +304,11 @@ def modify_multi_instance_dashboard():
             multi_instance_panel['gridPos']['y'] = \
                 int(multi_instance_panel['gridPos']['y'])*(i+1)
             js['panels'].append(multi_instance_panel)
+        for i in range(1, len(topics_list)+1):
+            port = js['panels'][i]['url'].split(":")[-1].split("/")[0]
+            new_port = int(port) + (math.ceil(i/6) - 1)
+            js['panels'][i]['url'] = js['panels'][i]['url'].replace(port,
+                                                                    str(new_port))
     with open('./Grafana/dashboard.json', "w") as f:
         json.dump(js, f, ensure_ascii=False, indent=4)
 
@@ -402,6 +408,17 @@ def render_image(topic_name):
     return Response("Invalid Request")
 
 
+def flask_runner(context, port):
+    """Method to run flask server
+    """
+    flask_debug = bool(os.environ['PY_LOG_LEVEL'].lower() == 'debug')
+
+    # Start a flask server instance
+    APP.run(host='0.0.0.0', port=port,  # nosec
+            debug=flask_debug, threaded=True,
+            ssl_context=context)
+
+
 def main():
     """Main method for grafana
     """
@@ -420,6 +437,11 @@ def main():
         log.info("generating dev mode config files for grafana")
         generate_dev_datasource_file(db_config)
         generate_dev_ini_file()
+
+    # Multi instace variables
+    context, port = None, None
+    num_of_subs = 0
+    threads = []
 
     try:
         # Initializing subscriber for multiple streams
@@ -441,12 +463,7 @@ def main():
 
     copy_config_files()
 
-    flask_debug = bool(os.environ['PY_LOG_LEVEL'].lower() == 'debug')
-
-    if dev_mode:
-        APP.run(host='0.0.0.0', port=app_cfg['dev_port'],
-                debug=flask_debug, threaded=True)
-    else:
+    if not dev_mode:
         APP.secret_key = os.urandom(24)
         context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 
@@ -471,8 +488,25 @@ def main():
         context.load_cert_chain(server_cert_temp.name, server_key_temp.name)
         server_cert_temp.close()
         server_key_temp.close()
-        APP.run(host='0.0.0.0', port=app_cfg['port'],  # nosec
-                debug=flask_debug, threaded=True, ssl_context=context)
+
+    # All browser security limitations retrict flask from serving
+    # more than 6 requests
+    # Hence, running a flask server instance for every 6 streams
+    if dev_mode:
+        port = app_cfg['dev_port']
+    else:
+        port = app_cfg['port']
+
+    for i in range(0, (math.ceil(num_of_subs/6))):
+        port = port + i
+        thread = threading.Thread(target=flask_runner,
+                                  args=(context,
+                                        port, ))
+        threads.append(thread)
+        thread.start()
+
+    for thread in threads:
+        thread.join()
 
 
 if __name__ == "__main__":
