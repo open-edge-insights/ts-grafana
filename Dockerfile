@@ -55,7 +55,7 @@ COPY requirements.txt ./Grafana/requirements.txt
 RUN pip3 install --user -r Grafana/requirements.txt
 
 RUN apt-get update && \
-    apt-get install ffmpeg libsm6 libxext6  -y
+    apt-get install libsm6 libxext6 python3-opencv libcrypto++6 -y
 
 COPY . ./Grafana
 
