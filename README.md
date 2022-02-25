@@ -95,3 +95,4 @@ Perform the following steps to run Grafana for a video use case:
 > 2. Changing gridPos for the video frame panels is prohibited since these values are altered internally to support multi instance.
 > 3. Since Grafana does not run as EII_USER due to permission issues in creating Grafana certs internally, it currently does not support susbcribing to EII services in IPC mode.
 > 4. Grafana does not support visualization for GVA streams.
+> 5. Grafana currently supports running a maximum number of **12 streams** only.
