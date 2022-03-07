@@ -26,7 +26,7 @@ datasources:
    # <bool> enable/disable basic auth
    basicAuth: true
    # <string> basic auth username
-   basicAuthUser: admin
+   basicAuthUser: $INFLUXDB_USERNAME
    # <bool> enable/disable with credentials headers
    withCredentials: false
    # <bool> mark as default datasource. Max one per org
@@ -43,7 +43,7 @@ datasources:
      tlsClientCert: "..."
      tlsClientKey: "..."
      # <string> basic auth password
-     basicAuthPassword: admin123
+     basicAuthPassword: $INFLUXDB_PASSWORD
      # <string> database password, if used
      password: ""
      # <openshift\kubernetes token example>
