@@ -56,7 +56,7 @@ To run Grafana in the PROD mode, import `cacert.pem` from the `build/Certificate
 
 ### Run Grafana in the DEV mode
 
-To run Grafana in the PROD mode, complete the following steps:
+To run Grafana in the DEV mode, complete the following steps:
 
 1. After starting the `ia_grafana` service, go to `http://< host ip >:3000`.
 2. Enter the default credentials details, username: "admin" and password: "admin".

@@ -219,13 +219,13 @@ def read_config(app_cfg):
     """This function reads the InfluxDBConnector config
        from etcd to fetch the InfluxDB credentials
     """
-    user_name = os.environ["INFLUXDB_USERNAME"]
-    password = os.environ["INFLUXDB_PASSWORD"]
+    influx_uname = os.environ["INFLUXDB_USERNAME"]
+    influx_pwd = os.environ["INFLUXDB_PASSWORD"]
     dbname = app_cfg["influxdb"]["dbname"]
 
     db_conf = {}
-    db_conf['user'] = user_name
-    db_conf['password'] = password
+    db_conf['user'] = influx_uname
+    db_conf['password'] = influx_pwd
     db_conf['database'] = dbname
 
     return db_conf
@@ -377,6 +377,11 @@ def get_image_data(topic_name):
 def set_header_tags(response):
     """Local function to set secure response tags"""
     response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=1024000;\
+                                                    includeSubDomains'
     return response
 
 
