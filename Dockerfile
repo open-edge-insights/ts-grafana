@@ -57,6 +57,8 @@ RUN pip3 install --user -r Grafana/requirements.txt
 RUN apt-get update && \
     apt-get install libsm6 libxext6 python3-opencv libcrypto++6 -y
 
+RUN apt-get remove --auto-remove --purge -y python3-pip
+
 COPY . ./Grafana
 
 ARG EII_UID
