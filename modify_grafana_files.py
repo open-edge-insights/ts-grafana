@@ -416,11 +416,10 @@ def render_image(topic_name):
 def flask_runner(context, port):
     """Method to run flask server
     """
-    flask_debug = bool(os.environ['PY_LOG_LEVEL'].lower() == 'debug')
 
     # Start a flask server instance
     APP.run(host='0.0.0.0', port=port,  # nosec
-            debug=flask_debug, threaded=True,
+            debug=False, threaded=True,
             ssl_context=context)
 
 

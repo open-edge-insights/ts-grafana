@@ -75,13 +75,13 @@ RUN cp -r /root/.local/lib/python3.8/site-packages/* .local/lib/python3.8/site-p
 RUN chown -R ${EII_UID} .local/lib/python3.8
 
 RUN mkdir /tmp/grafana && \
-    chown -R ${EII_UID}:${EII_UID} /tmp/ ./Grafana/ && \
+    chown -R ${EII_UID}:${EII_UID} /tmp/ ./Grafana/ ${CMAKE_INSTALL_PREFIX} && \
     chmod -R 760 /tmp/ ./Grafana/ ${CMAKE_INSTALL_PREFIX}
 
 ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:${CMAKE_INSTALL_PREFIX}/lib
 ENV PATH $PATH:/app/.local/bin
 
-# USER $EII_USER_NAME
+USER $EII_USER_NAME
 HEALTHCHECK NONE
 
 ENTRYPOINT ["./Grafana/run.sh"]
