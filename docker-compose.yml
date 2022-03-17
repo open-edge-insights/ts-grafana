@@ -34,6 +34,7 @@ services:
           EII_UID: ${EII_UID}
           EII_USER_NAME: ${EII_USER_NAME}
           CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
+          OPENVINO_IMAGE: ${OPENVINO_IMAGE}
     image: ${DOCKER_REGISTRY}openedgeinsights/ia_grafana:${EII_VERSION}
     container_name: ia_grafana
     hostname: ia_grafana

@@ -33,7 +33,7 @@ export GF_PATHS_PLUGINS="/tmp/grafana/lib/grafana/plugins"
 export GF_PATHS_PROVISIONING="/tmp/grafana/conf/provisioning"
 
 echo "Copying the grafana configurations to /tmp"
-cp -r /usr/share/grafana /tmp/
+cp -r /app/grafana-$GRAFANA_VERSION /tmp/grafana
 
 echo "Grafana enabled"
 python3 ./Grafana/modify_grafana_files.py &
