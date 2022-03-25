@@ -24,7 +24,7 @@
 # set -x
 
 : "${GRAFANA_DATA_PATH:=/tmp/grafana/lib/grafana}"
-: "${GRAFANA_LOGS_PATH:=/tmp/grfana/log/grafana}"
+: "${GRAFANA_LOGS_PATH:=/tmp/grafana/log/grafana}"
 : "${GRAFANA_PLUGINS_PATH:=/tmp/grafana/lib/grafana/plugins}"
 
 export GF_PATHS_DATA="/tmp/grafana/lib/grafana"
@@ -33,10 +33,14 @@ export GF_PATHS_PLUGINS="/tmp/grafana/lib/grafana/plugins"
 export GF_PATHS_PROVISIONING="/tmp/grafana/conf/provisioning"
 
 echo "Copying the grafana configurations to /tmp"
-cp -r /usr/share/grafana /tmp/
+cp -r /app/grafana-$GRAFANA_VERSION /tmp/grafana
 
 echo "Grafana enabled"
-python3 ./Grafana/modify_grafana_files.py
+python3 ./Grafana/modify_grafana_files.py &
+
+sleep_interval=10
+echo "Waiting for $sleep_interval seconds for Grafana dirs to be created"
+sleep $sleep_interval
 
 if [ $? -eq 0 ]; then
     echo "Grafana configuration files modified successfully"

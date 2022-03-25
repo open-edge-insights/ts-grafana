@@ -34,10 +34,11 @@ services:
           EII_UID: ${EII_UID}
           EII_USER_NAME: ${EII_USER_NAME}
           CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
+          OPENVINO_IMAGE: ${OPENVINO_IMAGE}
     image: ${DOCKER_REGISTRY}openedgeinsights/ia_grafana:${EII_VERSION}
     container_name: ia_grafana
     hostname: ia_grafana
-    read_only: true
+    read_only: false
     restart: unless-stopped
     ipc: "none"
     security_opt:
@@ -47,26 +48,28 @@ services:
       interval: 5m        
     environment:
       AppName: "Grafana"
-      CertType: "pem"
       DEV_MODE: ${DEV_MODE}
       no_proxy: "${ETCD_HOST},ia_influxdbconnector"
       NO_PROXY: "${ETCD_HOST},ia_influxdbconnector"
       ETCD_HOST: ${ETCD_HOST}
+      ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
       ETCD_PREFIX: ${ETCD_PREFIX}
-      INFLUX_SERVER: 'ia_influxdbconnector'
+      HOST_IP: ${HOST_IP}
+      INFLUX_SERVER: ${HOST_IP}
       GRAFANA_SERVER: '0.0.0.0'
+      INFLUXDB_USERNAME: ${INFLUXDB_USERNAME}
+      INFLUXDB_PASSWORD: ${INFLUXDB_PASSWORD}
     networks:
       - eii
     volumes:
        - "vol_temp_grafana:/tmp"
+       - "vol_eii_socket:${SOCKET_DIR}"
+       - ./Certificates/Grafana:/run/secrets/Grafana:ro
+       - ./Certificates/rootca/cacert.pem:/run/secrets/rootca/cacert.pem:ro
     ports:
       - "$GRAFANA_PORT:$GRAFANA_PORT"
-    secrets:
-      - ca_etcd
-      - etcd_Grafana_cert
-      - etcd_Grafana_key
-      - etcd_InfluxDBConnector_cert
-      - etcd_InfluxDBConnector_key
+      - 5003:5003
+      - 5004:5004
 
 volumes:
   vol_temp_grafana:
@@ -75,12 +78,3 @@ volumes:
       type: tmpfs
       device: tmpfs
 
-secrets:
-  etcd_Grafana_cert:
-    file: provision/Certificates/Grafana/Grafana_client_certificate.pem
-  etcd_Grafana_key:
-    file: provision/Certificates/Grafana/Grafana_client_key.pem
-  etcd_InfluxDBConnector_cert:
-    file: provision/Certificates/InfluxDBConnector/InfluxDBConnector_client_certificate.pem
-  etcd_InfluxDBConnector_key:
-    file: provision/Certificates/InfluxDBConnector/InfluxDBConnector_client_key.pem
