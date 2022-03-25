@@ -1,4 +1,15 @@
-# Grafana
+# Contents
+
+- [Contents](#contents)
+  - [Grafana](#grafana)
+    - [Configuration](#configuration)
+    - [Run Grafana](#run-grafana)
+      - [Run Grafana in the PROD mode](#run-grafana-in-the-prod-mode)
+      - [Run Grafana in the DEV mode](#run-grafana-in-the-dev-mode)
+    - [Execute queries](#execute-queries)
+    - [Run Grafana for video use cases](#run-grafana-for-video-use-cases)
+
+## Grafana
 
 Grafana is an open-source metric analytics and visualization suite. Its uses include:
 
@@ -7,7 +18,7 @@ Grafana is an open-source metric analytics and visualization suite. Its uses inc
 
 Grafana supports various storage backends for the time-series data (data source). Open Edge Insights (OEI) uses InfluxDB as the data source. Grafana connects to the InfluxDB data source which has been preconfigured as a part of the Grafana setup. The 'ia_influxdbconnector' service must be running for Grafana to be able to collect the time-series data. After the data source starts working, you can use the preconfigured dashboard to visualize the incoming data. You can also edit the dashboard as required.
 
-## Configuration
+### Configuration
 
 The following are the configuration details for Grafana:
 
@@ -21,7 +32,7 @@ The following are the configuration details for Grafana:
 
 >**Note:** You can edit the contents of these files based on your requirement.
 
-## Run Grafana
+### Run Grafana
 
 Based on requirement, you can run Grafana in the `Prod mode` or the `DEV mode`.
 
@@ -36,7 +47,7 @@ Complete the following steps to run Grafana:
 
 Complete the previous steps and based on the mode that you want to run Grafana refer to the following sections:
 
-### Run Grafana in the PROD mode
+#### Run Grafana in the PROD mode
 
 >**Note:** Skip this section, if you are running Grafana in the DEV mode.
 
@@ -54,7 +65,7 @@ To run Grafana in the PROD mode, import `cacert.pem` from the `build/Certificate
 10. Select the **cacert.pem** file.
 11. Select all checkboxes and then, click **Import**.
 
-### Run Grafana in the DEV mode
+#### Run Grafana in the DEV mode
 
 To run Grafana in the DEV mode, complete the following steps:
 
@@ -66,7 +77,7 @@ To run Grafana in the DEV mode, complete the following steps:
 6. Click **Panel Title** and then, select **Edit**.
 7. On the **Point_Data_Dashboard** page, if required make modifications to the query.
 
-## Execute queries
+### Execute queries
 
 On the `Point_Data_Dashboard`, the green spikes visible in the graph are the results of the default query. To run queries, perform the following steps:
 
@@ -78,7 +89,7 @@ On the `Point_Data_Dashboard`, the green spikes visible in the graph are the res
    >**Note:** By default the **SELECT** section will have **field(temperature) mean() +**.
    > The graph will change according to the values you select.
 
-## Run Grafana for video use cases
+### Run Grafana for video use cases
 
 Perform the following steps to run Grafana for a video use case:
 
